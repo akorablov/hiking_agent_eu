@@ -3,11 +3,9 @@ import requests
 def get_weather(latitude, longitude):
     """
     Fetches hourly weather forecast data from the Open-Meteo API.
-
     Args:
         latitude (float): The latitude for the weather forecast.
         longitude (float): The longitude for the weather forecast.
-
     Returns:
         dict: A dictionary containing the API response with weather data,
               or None if an error occurs.
