@@ -73,8 +73,6 @@ hiking-agent/
 ├── location_eu.py         # IP geolocation
 ├── weather.py             # Open-Meteo forecast + WMO weather code lookup
 ├── hiking_agent.ipynb     # Annotated walkthrough notebook with 11 live tests
-├── app.py                 # Streamlit web UI (for Hugging Face Spaces deploy)
-├── requirements.txt       # Dependencies for cloud deploy
 └── README.md
 ```
 
