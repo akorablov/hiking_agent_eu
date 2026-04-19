@@ -12,8 +12,6 @@
 
 *Detects your location > checks today's weather > discovers every walkable green area nearby > recommends the best outing for the day.*
 
-[Quick Start](#quick-start) · [How it works](#how-it-works) · [Deploy online](#deploy-online-free) · [Notebook](#notebook) · [Configuration](#configuration)
-
 </div>
 
 ---
