@@ -2,10 +2,13 @@ import requests
 import time
 import math
 
+# Overpass mirrors tried in order. Maps.mail.ru removed (returns 403).
+# Endpoints are tried with exponential backoff on 429/504.
 OVERPASS_ENDPOINTS = [
-    "https://overpass.kumi.systems/api/interpreter",
-    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
     "https://overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass.osm.ch/api/interpreter",
+    "https://overpass.openstreetmap.ru/api/interpreter",
 ]
 
 MAX_PARKS = 6
@@ -118,18 +121,52 @@ def _haversine_km(lat1, lon1, lat2, lon2):
 
 
 def _post_overpass(query, timeout=45):
+    """
+    Try each Overpass mirror in turn with exponential backoff on rate limits.
+
+    Handles:
+      - 429 Too Many Requests  → wait and retry same endpoint (up to 2x)
+      - 504 Gateway Timeout    → skip to next mirror immediately
+      - Connection timeout      → skip to next mirror
+      - 403 Forbidden          → skip to next mirror (IP block / firewall)
+    """
+    headers = {
+        "User-Agent": "HikingAgent/1.0 (open-source project; github.com)",
+        "Accept-Charset": "utf-8",
+    }
     for endpoint in OVERPASS_ENDPOINTS:
-        try:
-            r = requests.post(endpoint, data={"data": query}, timeout=timeout)
-            if r.status_code == 504:
-                print(f"  504 from {endpoint.split('/')[2]}, trying next...")
-                continue
-            r.raise_for_status()
-            return r.json()
-        except requests.exceptions.Timeout:
-            print(f"  Timeout from {endpoint.split('/')[2]}, trying next...")
-        except requests.exceptions.RequestException as e:
-            print(f"  Error from {endpoint.split('/')[2]}: {e}")
+        host = endpoint.split("/")[2]
+        for attempt in range(3):   # up to 3 tries per endpoint on 429
+            try:
+                r = requests.post(
+                    endpoint,
+                    data={"data": query},
+                    headers=headers,
+                    timeout=timeout,
+                )
+                if r.status_code == 429:
+                    wait = 5 * (attempt + 1)
+                    print(f"  ⚠  Rate limited by {host}, waiting {wait}s…")
+                    time.sleep(wait)
+                    continue
+                if r.status_code in (502, 503, 504):
+                    print(f"  ⚠  {r.status_code} from {host}, trying next mirror…")
+                    break   # skip to next endpoint
+                if r.status_code == 403:
+                    print(f"  ⚠  403 from {host} (IP blocked), trying next mirror…")
+                    break
+                r.raise_for_status()
+                return r.json()
+            except requests.exceptions.Timeout:
+                print(f"  ⚠  Timeout from {host}, trying next mirror…")
+                break
+            except requests.exceptions.ConnectionError:
+                print(f"  ⚠  Connection error from {host}, trying next mirror…")
+                break
+            except requests.exceptions.RequestException as e:
+                print(f"  ⚠  Error from {host}: {e}")
+                break
+        time.sleep(1)   # brief pause between mirrors to be polite
     return None
 
 
