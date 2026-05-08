@@ -1,6 +1,5 @@
 import os, time
 import streamlit as st
-import streamlit.components.v1 as components
 from groq import Groq
 from location_eu import get_current_location
 from weather import get_weather, get_todays_weather_summary
@@ -535,7 +534,7 @@ def run_pipeline(lat: float, lon: float):
 # SESSION STATE
 # ════════════════════════════════════════════════════════════════════
 for k, v in [("done", False), ("history", []), ("memory", []),
-             ("chat", []), ("result", None)]:
+             ("chat", []), ("result", None), ("get_location", False)]:
     if k not in st.session_state:
         st.session_state[k] = v
 
@@ -568,32 +567,11 @@ if not st.session_state.done:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Geolocation component - reads browser GPS, stores in session state ──
-    geo_html = """
-    <script>
-    function sendLocation() {
-        navigator.geolocation.getCurrentPosition(
-            function(pos) {
-                var data = pos.coords.latitude + "," + pos.coords.longitude;
-                window.parent.postMessage({isStreamlitMessage: true,
-                    type: "streamlit:setComponentValue", value: data}, "*");
-            },
-            function(err) {
-                window.parent.postMessage({isStreamlitMessage: true,
-                    type: "streamlit:setComponentValue", value: "error:" + err.message}, "*");
-            },
-            {enableHighAccuracy: true, timeout: 15000, maximumAge: 0}
-        );
-    }
-    window.addEventListener("message", function(e) {
-        if (e.data.type === "streamlit:render") { sendLocation(); }
-    });
-    </script>
-    """
+    from streamlit_js_eval import streamlit_js_eval, get_geolocation
 
     col_a, col_b, col_c = st.columns([1, 2, 1])
     with col_b:
-        go = st.button("Find walks near me →", use_container_width=True)
+        go = st.button("📍  Find walks near me →", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
@@ -617,39 +595,35 @@ if not st.session_state.done:
     """, unsafe_allow_html=True)
 
     if go:
-        # Trigger browser GPS via component
-        coords = components.html(geo_html, height=0)
-        if coords and not str(coords).startswith("error"):
-            try:
-                lat, lon = map(float, str(coords).split(","))
-                st.session_state["pending_lat"] = lat
-                st.session_state["pending_lon"] = lon
-            except Exception:
-                pass
-        st.info("📍 Click **Allow** in the browser popup to share your location.")
+        st.session_state["get_location"] = True
 
-    # Once we have coordinates, run the pipeline
-    if "pending_lat" in st.session_state and not st.session_state.done:
-        lat = st.session_state.pop("pending_lat")
-        lon = st.session_state.pop("pending_lon")
-        with st.spinner("Checking weather · Finding nearby walks…"):
-            result = run_pipeline(lat, lon)
-            st.session_state.result = result
-        if "error" in result:
-            st.error(result["error"])
-        elif not result.get("weather_ok", True):
-            st.markdown(f"""
-            <div class="weather-bad">
-              <div class="weather-bad-title">Not ideal walking weather today.</div>
-              <div class="weather-bad-desc">{result.get('weather_summary','')}<br><br>
-              Check back tomorrow!</div>
-            </div>
-            """, unsafe_allow_html=True)
+    if st.session_state.get("get_location"):
+        with st.spinner("📍 Waiting for location permission…"):
+            loc = get_geolocation()
+        if loc and "coords" in loc:
+            lat = loc["coords"]["latitude"]
+            lon = loc["coords"]["longitude"]
+            st.session_state["get_location"] = False
+            with st.spinner("Checking weather · Finding nearby walks…"):
+                result = run_pipeline(lat, lon)
+                st.session_state.result = result
+            if "error" in result:
+                st.error(result["error"])
+            elif not result.get("weather_ok", True):
+                st.markdown(f"""
+                <div class="weather-bad">
+                  <div class="weather-bad-title">Not ideal walking weather today.</div>
+                  <div class="weather-bad-desc">{result.get('weather_summary','')}<br><br>
+                  Check back tomorrow!</div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.session_state.done    = True
+                st.session_state.history = result.get("message_history", [])
+                st.session_state.chat.append(("assistant", result["recommendations"]))
+                st.rerun()
         else:
-            st.session_state.done    = True
-            st.session_state.history = result.get("message_history", [])
-            st.session_state.chat.append(("assistant", result["recommendations"]))
-            st.rerun()
+            st.info("📍 Please **allow location access** in the browser popup and wait…")
 
 
 
