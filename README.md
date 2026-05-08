@@ -1,13 +1,3 @@
----
-title: Trail Finder
-emoji: 🥾
-colorFrom: green
-colorTo: black
-sdk: docker
-pinned: false
-license: mit
----
-
 <div align="center">
 
 <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Hiking%20boot/3D/hiking_boot_3d.png" width="96" alt="hiking boot"/>
