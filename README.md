@@ -1,3 +1,13 @@
+---
+title: Trail Finder
+emoji: 🥾
+colorFrom: green
+colorTo: black
+sdk: docker
+pinned: false
+license: mit
+---
+
 <div align="center">
 
 <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Hiking%20boot/3D/hiking_boot_3d.png" width="96" alt="hiking boot"/>
@@ -6,9 +16,10 @@
 ### AI-powered walk recommendations · Anywhere in the world · Zero cost
 
 [![Python](https://img.shields.io/badge/Python-3.9+-3776ab?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![Ollama](https://img.shields.io/badge/Ollama-local%20LLM-black?style=flat-square)](https://ollama.ai)
+[![Groq](https://img.shields.io/badge/Groq-LLM%20API-orange?style=flat-square)](https://console.groq.com)
 [![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-Overpass%20API-7ebc6f?style=flat-square&logo=openstreetmap&logoColor=white)](https://overpass-api.de)
 [![Open-Meteo](https://img.shields.io/badge/Open--Meteo-weather-00aaff?style=flat-square)](https://open-meteo.com)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
 *Detects your location > checks today's weather > discovers every walkable green area nearby > recommends the best outing for the day.*
 
@@ -27,7 +38,7 @@ Run one command. The agent handles everything:
 | 🤖 **Decide** | Asks the LLM *"is it a good day to go outside?"* - exits early if not |
 | 🗺 **Discover** | Finds every walkable green area within 25 km via OpenStreetMap |
 | 🥾 **Trails** | Fetches hiking routes for all areas in a single efficient request |
-| 💬 **Recommend** | Returns top 2-3 picks with practical, local-guide-style reasons |
+| 💬 **Recommend** | Returns top 2–3 picks with practical, local-guide-style reasons |
 | 🔁 **Chat** | Answers follow-up questions with full conversation memory |
 
 ---
@@ -58,7 +69,7 @@ Run one command. The agent handles everything:
 | [geocoder](https://geocoder.readthedocs.io) | IP > lat/lon/city/country | Free · no key |
 | [Open-Meteo](https://open-meteo.com) | Hourly weather forecast, global | Free · no key |
 | [Overpass API](https://overpass-api.de) / OSM | Parks, reserves, forests, trails | Free · no key |
-| [Ollama](https://ollama.ai) | Local LLM inference | Free · runs on your machine |
+| [Groq API](https://console.groq.com) | Cloud LLM inference | Free · 14,400 req/day |
 
 > **Total running cost: €0**
 
@@ -68,11 +79,14 @@ Run one command. The agent handles everything:
 
 ```
 hiking-agent/
-├── main_eu.py             # Entry point - run this
+├── main_eu.py             # Entry point for local use
 ├── parks_eu.py            # Overpass queries, dedup, distance sorting, fallback
 ├── location_eu.py         # IP geolocation
 ├── weather.py             # Open-Meteo forecast + WMO weather code lookup
 ├── hiking_agent.ipynb     # Annotated walkthrough notebook with 11 live tests
+├── app.py                 # Streamlit web UI (Hugging Face Spaces / Docker)
+├── Dockerfile             # Docker build instructions for HF Spaces
+├── requirements.txt       # Python dependencies for cloud deploy
 └── README.md
 ```
 
@@ -140,7 +154,7 @@ pip install geocoder requests ollama
 Open `main_eu.py` and update line 6:
 
 ```python
-MODEL = "llama3"   # must match exactly what ollama list shows
+MODEL = "llama3"   # must match exactly what `ollama list` shows
 ```
 
 ---
@@ -169,10 +183,10 @@ python main_eu.py
 --- Walking & Hiking Recommendations ---
 
 1. Kampa (1.0 km) - A beautiful island park on the Vltava with riverside paths
-   and views of Charles Bridge. Perfect 30-45 min stroll. Flat, paved, dog-friendly.
+   and views of Charles Bridge. Perfect 30–45 min stroll. Flat, paved, dog-friendly.
 
 2. Divoká Šárka (1.4 km) - Prague's wildest green valley. Forested ravines,
-   a natural swimming lake in summer. Allow 1-2 hours. Mostly easy terrain.
+   a natural swimming lake in summer. Allow 1–2 hours. Mostly easy terrain.
 
 You > Which one is better for dogs?
 Agent > Both are excellent for dogs, but Kampa edges it...
@@ -199,11 +213,11 @@ All settings live at the top of `main_eu.py` and `parks_eu.py`:
 
 ### 📍 Location detection
 
-`location_eu.py` resolves your public IP to a lat/lon coordinate using the `geocoder` library. Accuracy is typically 10-50 km - more than sufficient for a 25 km search radius. No GPS, no browser permissions, no personal data stored.
+`location_eu.py` resolves your public IP to a lat/lon coordinate using the `geocoder` library. Accuracy is typically 10–50 km - more than sufficient for a 25 km search radius. No GPS, no browser permissions, no personal data stored.
 
 ### 🌤 Weather
 
-`weather.py` queries Open-Meteo for an hourly forecast at your exact coordinates and extracts the **08:00-17:00 daylight window**, summarising it into one sentence:
+`weather.py` queries Open-Meteo for an hourly forecast at your exact coordinates and extracts the **08:00–17:00 daylight window**, summarising it into one sentence:
 
 > *"Today's forecast: Partly cloudy, average 13°C, max precipitation probability 0%."*
 
@@ -236,14 +250,12 @@ Rather than one Overpass HTTP request per park (which caused cascading 429 rate-
 
 - **Sliding window** - conversation history is trimmed to `MAX_HISTORY` messages so the LLM context window never overflows across long sessions
 - **Pinned facts** - type `remember: I prefer flat walks` to pin a preference that survives history trimming and is injected into every subsequent prompt
-
 ---
-
 ## ⚠️ Limitations
 
 | Area | Detail |
 |------|--------|
-| **IP geolocation** | City-level accuracy (~10-50 km). Rural users may get the nearest town as their position |
+| **IP geolocation** | City-level accuracy (~10–50 km). Rural users may get the nearest town as their position |
 | **OSM coverage** | Western Europe and North America are very well mapped. Parts of Africa, Central Asia, and rural South America have sparser data |
 | **Overpass availability** | Public mirrors are best-effort. The fallback list covers major parks on every continent but cannot replicate live OSM richness |
 | **Trail difficulty** | Relies on the `sac_scale` OSM tag, which is not universally applied. `Unknown` difficulty means unrated in OSM, not dangerous |
@@ -258,5 +270,5 @@ Do whatever you like with it. Contributions welcome.
 ---
 
 <div align="center">
-<sub>Built with OpenStreetMap · Open-Meteo · Ollama · Python</sub>
+<sub>Built with OpenStreetMap · Open-Meteo · Groq · Python · Docker</sub>
 </div>
