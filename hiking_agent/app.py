@@ -3,6 +3,7 @@ import streamlit as st
 from groq import Groq
 from location_eu import get_current_location
 from weather import get_weather, get_todays_weather_summary
+from location_eu import get_current_location
 from parks_eu import get_parks, get_trails_for_parks
 
 MODEL       = "llama-3.3-70b-versatile"
@@ -88,7 +89,7 @@ section[data-testid="stSidebar"] { display: none; }
 }
 
 .hero-h1 {
-  font-size: 52px;
+  font-size: 42px;
   font-weight: 300;
   line-height: 1.1;
   color: var(--white);
@@ -402,7 +403,7 @@ section[data-testid="stSidebar"] { display: none; }
 def get_groq_client():
     key = os.environ.get("GROQ_API_KEY", "")
     if not key:
-        st.error("GROQ_API_KEY secret is missing. Add it in Space Settings > Secrets.")
+        st.error("GROQ_API_KEY secret is missing. Add it in Space Settings → Secrets.")
         st.stop()
     return Groq(api_key=key)
 
@@ -462,11 +463,13 @@ def is_final_answer(messages):
 def run_pipeline():
     out = {}
     try:
-        lat, lon, city, country = get_current_location()
-        if not lat: return {"error": "Could not detect location from IP."}
+        import reverse_geocoder as rg
+        results = rg.search((lat, lon), verbose=False)
+        city    = results[0].get("name", "Unknown")
+        country = results[0].get("cc", "")
         out.update(lat=lat, lon=lon, city=city, country=country)
-    except Exception as e:
-        return {"error": str(e)}
+    except Exception:
+        out.update(lat=lat, lon=lon, city="Your location", country="")
 
     try:
         wd = get_weather(lat, lon)
@@ -557,7 +560,7 @@ if not st.session_state.done:
     st.markdown("""
     <div class="hero">
       <div class="hero-label">AI walk finder</div>
-      <h1 class="hero-h1">Where should<br>you walk <span>today?</span></h1>
+      <h1 class="hero-h1">Where should you walk <span>today?</span></h1>
       <p class="hero-desc">
         Detects your location, checks the weather, and finds
         every walkable green space near you - then recommends
@@ -568,7 +571,7 @@ if not st.session_state.done:
 
     col_a, col_b, col_c = st.columns([1, 2, 1])
     with col_b:
-        go = st.button("Find walks near me >", use_container_width=True)
+        go = st.button("Find walks near me →", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
@@ -591,26 +594,6 @@ if not st.session_state.done:
     </div>
     """, unsafe_allow_html=True)
 
-    if go:
-        with st.spinner("Locating you · Checking weather · Searching parks…"):
-            result = run_pipeline()
-            st.session_state.result = result
-
-        if "error" in result:
-            st.error(result["error"])
-        elif not result.get("weather_ok", True):
-            st.markdown(f"""
-            <div class="weather-bad">
-              <div class="weather-bad-title">Not great walking weather today.</div>
-              <div class="weather-bad-desc">{result.get('weather_summary','')}<br><br>
-              Check back tomorrow for better conditions.</div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.session_state.done    = True
-            st.session_state.history = result.get("message_history", [])
-            st.session_state.chat.append(("assistant", result["recommendations"]))
-            st.rerun()
 
 
 # ════════════════════════════════════════════════════════════════════
