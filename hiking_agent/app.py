@@ -134,9 +134,9 @@ section[data-testid="stSidebar"] { display: none; }
 .steps {
   display: flex;
   gap: 0;
-  margin-top: 64px;
+  margin-top: 32px;
   border-top: 1px solid var(--border);
-  padding-top: 32px;
+  padding-top: 24px;
 }
 .step {
   flex: 1;
@@ -559,9 +559,9 @@ st.markdown("""
 if not st.session_state.done:
     st.markdown("""
     <div class="hero">
-      <div class="hero-label">AI walk finder</div>
-      <h1 class="hero-h1" style="text-align:center;">Where should you walk <span>today?</span></h1>
-      <p class="hero-desc" style="text-align:center;margin-left:auto;margin-right:auto;">
+      <div class="hero-label">AI-powered walk recommendations</div>
+      <h1 class="hero-h1">Where should you walk <span>today?</span></h1>
+      <p class="hero-desc">
         Discover the best places to enjoy near you.
       </p>
     </div>
