@@ -559,9 +559,9 @@ st.markdown("""
 if not st.session_state.done:
     st.markdown("""
     <div class="hero">
-      <div class="hero-label">AI-powered recommendations</div>
-      <h1 class="hero-h1">Where should you walk <span>today?</span></h1>
-      <p class="hero-desc">
+      <div class="hero-label">AI walk finder</div>
+      <h1 class="hero-h1" style="text-align:center;">Where should you walk <span>today?</span></h1>
+      <p class="hero-desc" style="text-align:center;margin-left:auto;margin-right:auto;">
         Discover the best places to enjoy near you.
       </p>
     </div>
@@ -571,7 +571,7 @@ if not st.session_state.done:
 
     col_a, col_b, col_c = st.columns([1, 2, 1])
     with col_b:
-        go = st.button("📍  Find walks near me →", use_container_width=True)
+        go = st.button("Find walks near me →", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
@@ -623,7 +623,7 @@ if not st.session_state.done:
                 st.session_state.chat.append(("assistant", result["recommendations"]))
                 st.rerun()
         else:
-            st.info("📍 Please **allow location access** in the browser popup and wait…")
+            st.info("Please allow location access in the browser popup and wait…")
 
 
 
