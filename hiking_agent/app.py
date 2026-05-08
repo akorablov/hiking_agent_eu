@@ -134,9 +134,9 @@ section[data-testid="stSidebar"] { display: none; }
 .steps {
   display: flex;
   gap: 0;
-  margin-top: 32px;
+  margin-top: 28px;
   border-top: 1px solid var(--border);
-  padding-top: 24px;
+  padding-top: 20px;
 }
 .step {
   flex: 1;
