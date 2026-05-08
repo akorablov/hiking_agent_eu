@@ -1,5 +1,6 @@
 import os, time
 import streamlit as st
+import streamlit.components.v1 as components
 from groq import Groq
 from location_eu import get_current_location
 from weather import get_weather, get_todays_weather_summary
@@ -592,7 +593,7 @@ if not st.session_state.done:
 
     col_a, col_b, col_c = st.columns([1, 2, 1])
     with col_b:
-        go = st.button("📍  Find walks near me →", use_container_width=True)
+        go = st.button("Find walks near me →", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
@@ -617,7 +618,7 @@ if not st.session_state.done:
 
     if go:
         # Trigger browser GPS via component
-        coords = st.components.v1.html(geo_html, height=0)
+        coords = components.html(geo_html, height=0)
         if coords and not str(coords).startswith("error"):
             try:
                 lat, lon = map(float, str(coords).split(","))
