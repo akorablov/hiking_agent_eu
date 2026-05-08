@@ -2,7 +2,7 @@
 title: Trail Finder
 emoji: 🥾
 colorFrom: green
-colorTo: black
+colorTo: gray
 sdk: docker
 pinned: false
 license: mit
