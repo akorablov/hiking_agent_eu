@@ -460,7 +460,7 @@ def is_final_answer(messages):
 
 # ── Pipeline ──────────────────────────────────────────────────────────────────
 @st.cache_data(show_spinner=False)
-def run_pipeline():
+def run_pipeline(lat: float, lon: float):
     out = {}
     try:
         import reverse_geocoder as rg
@@ -559,25 +559,46 @@ st.markdown("""
 if not st.session_state.done:
     st.markdown("""
     <div class="hero">
-      <div class="hero-label">AI walk finder</div>
+      <div class="hero-label">AI-powered recommendations</div>
       <h1 class="hero-h1">Where should you walk <span>today?</span></h1>
       <p class="hero-desc">
-        Detects your location, checks the weather, and finds
-        every walkable green space near you - then recommends
-        the best one for the day.
+        Discover the best places to enjoy near you.
       </p>
     </div>
     """, unsafe_allow_html=True)
 
+    # ── Geolocation component - reads browser GPS, stores in session state ──
+    geo_html = """
+    <script>
+    function sendLocation() {
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                var data = pos.coords.latitude + "," + pos.coords.longitude;
+                window.parent.postMessage({isStreamlitMessage: true,
+                    type: "streamlit:setComponentValue", value: data}, "*");
+            },
+            function(err) {
+                window.parent.postMessage({isStreamlitMessage: true,
+                    type: "streamlit:setComponentValue", value: "error:" + err.message}, "*");
+            },
+            {enableHighAccuracy: true, timeout: 15000, maximumAge: 0}
+        );
+    }
+    window.addEventListener("message", function(e) {
+        if (e.data.type === "streamlit:render") { sendLocation(); }
+    });
+    </script>
+    """
+
     col_a, col_b, col_c = st.columns([1, 2, 1])
     with col_b:
-        go = st.button("Find walks near me →", use_container_width=True)
+        go = st.button("📍  Find walks near me →", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
       <div class="step">
         <div class="step-num">01</div>
-        <div class="step-text">Detect location<br>via IP</div>
+        <div class="step-text">Allow<br>location</div>
       </div>
       <div class="step">
         <div class="step-num">02</div>
@@ -593,6 +614,41 @@ if not st.session_state.done:
       </div>
     </div>
     """, unsafe_allow_html=True)
+
+    if go:
+        # Trigger browser GPS via component
+        coords = st.components.v1.html(geo_html, height=0)
+        if coords and not str(coords).startswith("error"):
+            try:
+                lat, lon = map(float, str(coords).split(","))
+                st.session_state["pending_lat"] = lat
+                st.session_state["pending_lon"] = lon
+            except Exception:
+                pass
+        st.info("📍 Click **Allow** in the browser popup to share your location.")
+
+    # Once we have coordinates, run the pipeline
+    if "pending_lat" in st.session_state and not st.session_state.done:
+        lat = st.session_state.pop("pending_lat")
+        lon = st.session_state.pop("pending_lon")
+        with st.spinner("Checking weather · Finding nearby walks…"):
+            result = run_pipeline(lat, lon)
+            st.session_state.result = result
+        if "error" in result:
+            st.error(result["error"])
+        elif not result.get("weather_ok", True):
+            st.markdown(f"""
+            <div class="weather-bad">
+              <div class="weather-bad-title">Not ideal walking weather today.</div>
+              <div class="weather-bad-desc">{result.get('weather_summary','')}<br><br>
+              Check back tomorrow!</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.session_state.done    = True
+            st.session_state.history = result.get("message_history", [])
+            st.session_state.chat.append(("assistant", result["recommendations"]))
+            st.rerun()
 
 
 
