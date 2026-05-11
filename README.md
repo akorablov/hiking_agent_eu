@@ -4,6 +4,9 @@
 
 # Hiking & Walking Finder
 ### AI-powered walk recommendations · Anywhere in the world · Zero cost
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Hugging%20Face-yellow?style=flat-square)](https://huggingface.co/spaces/akorablov/trail-finder)
+
 *Detects your location > checks today's weather > discovers every walkable green area nearby > recommends the best outing for the day.*
 
 </div>
@@ -172,7 +175,10 @@ python main_eu.py
 You > Which one is better for dogs?
 Agent > Both are excellent for dogs, but Kampa edges it...
 ```
-### - View my notebook with detailed steps here > [hiking_agent.ipynb](hiking_agent\hiking_agent.ipynb)
+- ### **View my notebook with detailed steps here > [hiking_agent.ipynb](hiking_agent/hiking_agent.ipynb)**
+
+- ### **Try it live > [huggingface.co/spaces/akorablov/trail-finder](https://huggingface.co/spaces/akorablov/trail-finder)**
+
 
 ---
 
