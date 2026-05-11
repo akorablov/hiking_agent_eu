@@ -516,7 +516,7 @@ def run_pipeline(lat: float, lon: float):
         recs, history = query_model(
             system_prompt=(
                 f"You are a friendly local guide for {city}, {country}. "
-                "Recommend the 2–3 best nearby walks from the list. "
+                "Recommend the 2-3 best nearby walks from the list. "
                 "Favour the closest. For each: what kind of walk, how long, why it's good. "
                 "Be warm, specific, and concise."
             ),
