@@ -27,6 +27,12 @@ Run one command. The agent handles everything:
 | 💬 **Recommend** | Returns top 2-3 picks with practical, local-guide-style reasons |
 | 🔁 **Chat** | Answers follow-up questions with full conversation memory |
 
+When running **locally** via [main_eu.py](hiking_agent/main_eu.py), location is detected automatically from your public IP address, no permissions needed.
+
+When using the [**live demo**](https://huggingface.co/spaces/akorablov/trail-finder) on Hugging Face, your browser will show a *"Wants to know your location"* popup. Click **Allow**, this is expected and necessary. The reason: Hugging Face servers are hosted in Virginia, USA, so server-side IP geolocation would always return Virginia rather than your actual location. The browser's GPS bypasses this entirely and gives your real position directly.
+
+The coordinates are used only to find nearby green areas. Nothing is stored or tracked.
+
 ---
 
 ## Architecture
@@ -175,9 +181,9 @@ python main_eu.py
 You > Which one is better for dogs?
 Agent > Both are excellent for dogs, but Kampa edges it...
 ```
-- ### **View my notebook with detailed steps here > [hiking_agent.ipynb](hiking_agent/hiking_agent.ipynb)**
+- #### *View my notebook with detailed steps here > [hiking_agent.ipynb](hiking_agent/hiking_agent.ipynb)**
 
-- ### **Try it live > [huggingface.co/spaces/akorablov/trail-finder](https://huggingface.co/spaces/akorablov/trail-finder)**
+- #### *Try it live > [huggingface.co/spaces/akorablov/trail-finder](https://huggingface.co/spaces/akorablov/trail-finder)**
 
 
 ---
