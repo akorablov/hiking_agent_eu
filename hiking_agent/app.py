@@ -67,7 +67,7 @@ section[data-testid="stSidebar"] { display: none; }
 }
 
 /* ── HERO ── */
-.hero { padding: 0 0 72px; }
+.hero { padding: 0 0 24px; }
 
 .hero-label {
   font-family: 'DM Mono', monospace;
@@ -93,7 +93,7 @@ section[data-testid="stSidebar"] { display: none; }
   font-weight: 300;
   line-height: 1.1;
   color: var(--white);
-  margin-bottom: 20px;
+  margin-bottom: 9px;
   letter-spacing: -1.5px;
 }
 .hero-h1 span {
@@ -107,7 +107,7 @@ section[data-testid="stSidebar"] { display: none; }
   line-height: 1.7;
   color: var(--mid);
   max-width: 440px;
-  margin-bottom: 40px;
+  margin-bottom: 16px;
 }
 
 /* ── MAIN CTA BUTTON ── */
@@ -134,7 +134,7 @@ section[data-testid="stSidebar"] { display: none; }
 .steps {
   display: flex;
   gap: 0;
-  margin-top: 28px;
+  margin-top: 16px;
   border-top: 1px solid var(--border);
   padding-top: 20px;
 }
