@@ -67,7 +67,7 @@ section[data-testid="stSidebar"] { display: none; }
 }
 
 /* ── HERO ── */
-.hero { padding: 0 0 24px; }
+.hero { padding: 0 0 72px; }
 
 .hero-label {
   font-family: 'DM Mono', monospace;
@@ -93,7 +93,7 @@ section[data-testid="stSidebar"] { display: none; }
   font-weight: 300;
   line-height: 1.1;
   color: var(--white);
-  margin-bottom: 9px;
+  margin-bottom: 20px;
   letter-spacing: -1.5px;
 }
 .hero-h1 span {
@@ -107,7 +107,7 @@ section[data-testid="stSidebar"] { display: none; }
   line-height: 1.7;
   color: var(--mid);
   max-width: 440px;
-  margin-bottom: 16px;
+  margin-bottom: 40px;
 }
 
 /* ── MAIN CTA BUTTON ── */
@@ -134,7 +134,7 @@ section[data-testid="stSidebar"] { display: none; }
 .steps {
   display: flex;
   gap: 0;
-  margin-top: 16px;
+  margin-top: 28px;
   border-top: 1px solid var(--border);
   padding-top: 20px;
 }
@@ -513,11 +513,16 @@ def run_pipeline(lat: float, lon: float):
     out["prompt_data"] = prompt_data
 
     try:
+        time_of_day = out.get("time_of_day", "day")
+        weather_note = out.get("weather_note", out["weather_summary"])
         recs, history = query_model(
             system_prompt=(
                 f"You are a friendly local guide for {city}, {country}. "
+                f"It is currently {time_of_day}. Weather today: {weather_note} "
+                "Never discourage a walk based on weather — some people love walking in rain or wind. "
                 "Recommend the 2-3 best nearby walks from the list. "
                 "Favour the closest. For each: what kind of walk, how long, why it's good. "
+                "If weather is challenging, briefly mention how it adds to the experience. "
                 "Be warm, specific, and concise."
             ),
             user_prompt=f"Green areas near {city}:\n{prompt_data}",
@@ -609,14 +614,6 @@ if not st.session_state.done:
                 st.session_state.result = result
             if "error" in result:
                 st.error(result["error"])
-            elif not result.get("weather_ok", True):
-                st.markdown(f"""
-                <div class="weather-bad">
-                  <div class="weather-bad-title">Not ideal walking weather today.</div>
-                  <div class="weather-bad-desc">{result.get('weather_summary','')}<br><br>
-                  Check back tomorrow!</div>
-                </div>
-                """, unsafe_allow_html=True)
             else:
                 st.session_state.done    = True
                 st.session_state.history = result.get("message_history", [])
