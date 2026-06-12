@@ -484,9 +484,13 @@ def is_final_answer(messages):
 
 
 # ── Pipeline ──────────────────────────────────────────────────────────────────
+# NOTE: browser_lang passed as argument — session_state not accessible
+# inside @st.cache_data functions
 @st.cache_data(show_spinner=False)
-def run_pipeline(lat: float, lon: float):
-    out = {}
+def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
+    out = {"recommendations": "", "message_history": []}
+
+    # 1. Reverse geocode coordinates to city name
     try:
         import reverse_geocoder as rg
         results = rg.search((lat, lon), verbose=False)
@@ -494,40 +498,47 @@ def run_pipeline(lat: float, lon: float):
         country = results[0].get("cc", "")
         out.update(lat=lat, lon=lon, city=city, country=country)
     except Exception:
-        out.update(lat=lat, lon=lon, city="Your location", country="")
+        city, country = "Your location", ""
+        out.update(lat=lat, lon=lon, city=city, country=country)
 
+    # 2. Weather
     try:
         wd = get_weather(lat, lon)
-        if not wd: return {"error": "Weather API unavailable. Try again shortly."}
+        if not wd:
+            out["error"] = "Weather API unavailable. Try again shortly."
+            return out
         out["weather_summary"] = get_todays_weather_summary(wd)
     except Exception as e:
-        return {"error": str(e)}
-
-    try:
-        dec, _ = query_model(
-            "Is the weather good for a walk or hike? Reply only yes or no.",
-            out["weather_summary"])
-        out["weather_ok"] = "no" not in dec.lower()
-    except Exception:
-        out["weather_ok"] = True
-
-    if not out["weather_ok"]:
-        out["recommendations"] = ""
-        out["message_history"] = []
+        out["error"] = str(e)
         return out
 
+    # 3. Time of day
+    from datetime import datetime
+    hour = datetime.now().hour
+    if hour < 12:   time_of_day = "morning"
+    elif hour < 17: time_of_day = "afternoon"
+    elif hour < 20: time_of_day = "evening"
+    else:           time_of_day = "night"
+    out["time_of_day"] = time_of_day
+
+    # 4. Parks
     try:
         parks = get_parks(lat, lon, radius_km=25)
-        if not parks: return {**out, "error": f"No green areas found near {city} within 25 km."}
+        if not parks:
+            out["error"] = f"No green areas found near {city} within 25 km."
+            return out
         out["parks"] = parks
     except Exception as e:
-        return {**out, "error": str(e)}
+        out["error"] = str(e)
+        return out
 
+    # 5. Trails
     try:
         out["trails"] = get_trails_for_parks(parks, radius_km=10)
     except Exception:
         out["trails"] = {p["name"]: [] for p in parks}
 
+    # 6. Build prompt
     prompt_data = ""
     for p in parks:
         trails = out["trails"].get(p["name"], [])
@@ -540,20 +551,17 @@ def run_pipeline(lat: float, lon: float):
             prompt_data += "  • Walkable area, no marked trails in OSM.\n"
     out["prompt_data"] = prompt_data
 
-    out["recommendations"] = ""
-    out["message_history"] = []
+    # 7. Generate recommendations
     try:
-        time_of_day = out.get("time_of_day", "day")
-        weather_note = out.get("weather_note", out.get("weather_summary", ""))
-        browser_lang = st.session_state.get("browser_lang", "en")
+        weather_summary = out.get("weather_summary", "")
         recs, history = query_model(
             system_prompt=(
                 f"You are a friendly local guide for {city}, {country}. "
-                f"It is currently {time_of_day}. Weather today: {weather_note} "
-                "Never discourage a walk based on weather — some people love walking in rain or wind. "
+                f"It is currently {time_of_day}. "
+                f"Today's weather: {weather_summary} "
+                "Never discourage a walk — some people love walking in any weather. "
                 "Recommend the 2-3 best nearby walks from the list. "
                 "Favour the closest. For each: what kind of walk, how long, why it's good. "
-                "If weather is challenging, briefly mention how it adds to the experience. "
                 f"IMPORTANT: Respond in the language with BCP-47 code '{browser_lang}'. "
                 "If unsure of the language, respond in English. "
                 "Be warm, specific, and concise."
@@ -643,7 +651,8 @@ if not st.session_state.done:
             lon = loc["coords"]["longitude"]
             st.session_state["get_location"] = False
             with st.spinner("Checking weather · Finding nearby walks…"):
-                result = run_pipeline(lat, lon)
+                browser_lang = st.session_state.get("browser_lang", "en")
+                result = run_pipeline(lat, lon, browser_lang)
                 st.session_state.result = result
             if "error" in result:
                 st.error(result["error"])
@@ -793,8 +802,8 @@ if st.session_state.get("done", False):
     col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
         if st.button("Search again", use_container_width=True):
-            for k in ["done", "history", "memory", "chat", "result"]:
-                del st.session_state[k]
+            for k in ["done","history","memory","chat","result","get_location"]:
+                st.session_state.pop(k, None)
             run_pipeline.clear()
             st.rerun()
 
