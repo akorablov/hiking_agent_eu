@@ -512,9 +512,12 @@ def run_pipeline(lat: float, lon: float):
             prompt_data += "  • Walkable area, no marked trails in OSM.\n"
     out["prompt_data"] = prompt_data
 
+    out["recommendations"] = ""
+    out["message_history"] = []
     try:
         time_of_day = out.get("time_of_day", "day")
-        weather_note = out.get("weather_note", out["weather_summary"])
+        weather_note = out.get("weather_note", out.get("weather_summary", ""))
+        browser_lang = st.session_state.get("browser_lang", "en")
         recs, history = query_model(
             system_prompt=(
                 f"You are a friendly local guide for {city}, {country}. "
@@ -523,6 +526,8 @@ def run_pipeline(lat: float, lon: float):
                 "Recommend the 2-3 best nearby walks from the list. "
                 "Favour the closest. For each: what kind of walk, how long, why it's good. "
                 "If weather is challenging, briefly mention how it adds to the experience. "
+                f"IMPORTANT: Respond in the language with BCP-47 code '{browser_lang}'. "
+                "If unsure of the language, respond in English. "
                 "Be warm, specific, and concise."
             ),
             user_prompt=f"Green areas near {city}:\n{prompt_data}",
@@ -530,7 +535,7 @@ def run_pipeline(lat: float, lon: float):
         out["recommendations"] = recs
         out["message_history"] = history
     except Exception as e:
-        return {**out, "error": str(e)}
+        out["error"] = str(e)
 
     return out
 
@@ -630,6 +635,24 @@ if not st.session_state.done:
 if st.session_state.done:
     r = st.session_state.result
 
+    if not r or "error" in r:
+        st.error(r.get("error", "Something went wrong — please try again.") if r else "No result.")
+        if st.button("Try again"):
+            for k in ["done","history","memory","chat","result"]:
+                st.session_state.pop(k, None)
+            run_pipeline.clear()
+            st.rerun()
+        st.stop()
+
+    if not r.get("recommendations"):
+        st.warning("Could not generate recommendations — please try again.")
+        if st.button("Try again"):
+            for k in ["done","history","memory","chat","result"]:
+                st.session_state.pop(k, None)
+            run_pipeline.clear()
+            st.rerun()
+        st.stop()
+
     # ── Status bar ────────────────────────────────────────────────
     st.markdown(f"""
     <div class="status-bar">
@@ -713,8 +736,9 @@ if st.session_state.done:
             st.session_state.chat.append(("user", s))
             with st.spinner(""):
                 try:
+                    lang = st.session_state.get("browser_lang", "en")
                     resp, new_hist = query_model(
-                        "", s,
+                        f"Always reply in the language with BCP-47 code '{lang}'.", s,
                         messages=st.session_state.history,
                         memory=st.session_state.memory,
                     )
