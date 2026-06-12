@@ -649,9 +649,10 @@ if not st.session_state.done:
                 st.error(result["error"])
             elif not result.get("recommendations"):
                 st.warning("Could not generate recommendations — please try again.")
-                for k in ["done","history","memory","chat","result"]:
+                for k in ["done","history","memory","chat","result","get_location"]:
                     st.session_state.pop(k, None)
                 run_pipeline.clear()
+                st.rerun()
             else:
                 st.session_state.done    = True
                 st.session_state.history = result.get("message_history", [])
@@ -665,13 +666,13 @@ if not st.session_state.done:
 # ════════════════════════════════════════════════════════════════════
 # RESULTS
 # ════════════════════════════════════════════════════════════════════
-if st.session_state.done:
+if st.session_state.get("done", False):
     r = st.session_state.result
 
     if not r or "error" in r:
         st.error(r.get("error", "Something went wrong — please try again.") if r else "No result.")
-        if st.button("Try again"):
-            for k in ["done","history","memory","chat","result"]:
+        if st.button("Try again", key="retry_error"):
+            for k in ["done","history","memory","chat","result","get_location"]:
                 st.session_state.pop(k, None)
             run_pipeline.clear()
             st.rerun()
@@ -679,8 +680,8 @@ if st.session_state.done:
 
     if not r.get("recommendations"):
         st.warning("Could not generate recommendations — please try again.")
-        if st.button("Try again"):
-            for k in ["done","history","memory","chat","result"]:
+        if st.button("Try again", key="retry_norec"):
+            for k in ["done","history","memory","chat","result","get_location"]:
                 st.session_state.pop(k, None)
             run_pipeline.clear()
             st.rerun()
