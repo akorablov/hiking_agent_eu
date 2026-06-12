@@ -353,6 +353,31 @@ section[data-testid="stSidebar"] { display: none; }
   color: #0a0a0a !important;
 }
 
+/* ── MAP BUTTON ── */
+.map-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--green);
+  border: 1px solid rgba(74,222,128,0.3);
+  border-radius: 4px;
+  padding: 3px 10px;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.map-btn:hover {
+  background: rgba(74,222,128,0.08);
+  border-color: var(--green);
+  color: var(--green);
+  text-decoration: none;
+}
+
 /* ── RESET LINK ── */
 .reset-wrap {
   padding: 32px 0 64px;
@@ -679,6 +704,9 @@ if st.session_state.done:
     for i, p in enumerate(parks):
         t_count = len(trails.get(p["name"], []))
         t_str   = f"{t_count} trail{'s' if t_count!=1 else ''}" if t_count else "walkable"
+        lat_p, lon_p = p.get("lat", 0), p.get("lon", 0)
+        # Universal map link — opens Google Maps on Android/desktop, Apple Maps on iOS
+        gmaps_url = f"https://www.google.com/maps/dir/?api=1&destination={lat_p},{lon_p}&travelmode=walking"
         rows += f"""
         <div class="park-row">
           <div class="park-name-col">
@@ -686,7 +714,10 @@ if st.session_state.done:
             <span class="park-name">{p['name']}</span>
             <span class="park-type">{p['type']} · {t_str}</span>
           </div>
-          <div class="park-dist">{p['distance_km']} km</div>
+          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+            <span class="park-dist">{p['distance_km']} km</span>
+            <a class="map-btn" href="{gmaps_url}" target="_blank">Take me there →</a>
+          </div>
         </div>"""
 
     st.markdown(f"""
