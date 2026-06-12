@@ -511,7 +511,10 @@ def run_pipeline(lat: float, lon: float):
     except Exception:
         out["weather_ok"] = True
 
-    if not out["weather_ok"]: return out
+    if not out["weather_ok"]:
+        out["recommendations"] = ""
+        out["message_history"] = []
+        return out
 
     try:
         parks = get_parks(lat, lon, radius_km=25)
@@ -644,6 +647,11 @@ if not st.session_state.done:
                 st.session_state.result = result
             if "error" in result:
                 st.error(result["error"])
+            elif not result.get("recommendations"):
+                st.warning("Could not generate recommendations — please try again.")
+                for k in ["done","history","memory","chat","result"]:
+                    st.session_state.pop(k, None)
+                run_pipeline.clear()
             else:
                 st.session_state.done    = True
                 st.session_state.history = result.get("message_history", [])
