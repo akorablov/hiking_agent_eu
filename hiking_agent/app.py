@@ -484,7 +484,7 @@ def is_final_answer(messages):
 
 
 # ── Pipeline ──────────────────────────────────────────────────────────────────
-# NOTE: browser_lang passed as argument — session_state not accessible
+# NOTE: browser_lang passed as argument - session_state not accessible
 # inside @st.cache_data functions
 @st.cache_data(show_spinner=False)
 def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
@@ -505,11 +505,13 @@ def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
     try:
         wd = get_weather(lat, lon)
         if not wd:
-            out["error"] = "Weather API unavailable. Try again shortly."
+            out["error"] = f"Weather API returned no data for ({lat:.4f}, {lon:.4f})."
             return out
         out["weather_summary"] = get_todays_weather_summary(wd)
     except Exception as e:
-        out["error"] = str(e)
+        import traceback
+        out["error"] = f"Weather error: {type(e).__name__}: {e}"
+        out["_traceback"] = traceback.format_exc()
         return out
 
     # 3. Time of day
@@ -559,7 +561,7 @@ def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
                 f"You are a friendly local guide for {city}, {country}. "
                 f"It is currently {time_of_day}. "
                 f"Today's weather: {weather_summary} "
-                "Never discourage a walk — some people love walking in any weather. "
+                "Never discourage a walk - some people love walking in any weather. "
                 "Recommend the 2-3 best nearby walks from the list. "
                 "Favour the closest. For each: what kind of walk, how long, why it's good. "
                 f"IMPORTANT: Respond in the language with BCP-47 code '{browser_lang}'. "
@@ -657,7 +659,7 @@ if not st.session_state.done:
             if "error" in result:
                 st.error(result["error"])
             elif not result.get("recommendations"):
-                st.warning("Could not generate recommendations — please try again.")
+                st.warning("Could not generate recommendations - please try again.")
                 for k in ["done","history","memory","chat","result","get_location"]:
                     st.session_state.pop(k, None)
                 run_pipeline.clear()
@@ -679,7 +681,7 @@ if st.session_state.get("done", False):
     r = st.session_state.result
 
     if not r or "error" in r:
-        st.error(r.get("error", "Something went wrong — please try again.") if r else "No result.")
+        st.error(r.get("error", "Something went wrong - please try again.") if r else "No result.")
         if st.button("Try again", key="retry_error"):
             for k in ["done","history","memory","chat","result","get_location"]:
                 st.session_state.pop(k, None)
@@ -688,7 +690,7 @@ if st.session_state.get("done", False):
         st.stop()
 
     if not r.get("recommendations"):
-        st.warning("Could not generate recommendations — please try again.")
+        st.warning("Could not generate recommendations - please try again.")
         if st.button("Try again", key="retry_norec"):
             for k in ["done","history","memory","chat","result","get_location"]:
                 st.session_state.pop(k, None)
@@ -723,7 +725,7 @@ if st.session_state.get("done", False):
         t_count = len(trails.get(p["name"], []))
         t_str   = f"{t_count} trail{'s' if t_count!=1 else ''}" if t_count else "walkable"
         lat_p, lon_p = p.get("lat", 0), p.get("lon", 0)
-        # Universal map link — opens Google Maps on Android/desktop, Apple Maps on iOS
+        # Universal map link - opens Google Maps on Android/desktop, Apple Maps on iOS
         gmaps_url = f"https://www.google.com/maps/dir/?api=1&destination={lat_p},{lon_p}&travelmode=walking"
         rows += f"""
         <div class="park-row">
