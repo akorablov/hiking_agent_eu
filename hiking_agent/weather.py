@@ -22,12 +22,16 @@ def get_weather(latitude, longitude):
         f"&timezone=auto"
     )
     try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()  # Raises an HTTPError for bad responses (4xx or 5xx)
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching weather data: {e}")
-        return None
+        response = requests.get(url, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+        # Validate the response has the expected structure
+        if "hourly" not in data:
+            raise ValueError(f"Unexpected API response: {str(data)[:200]}")
+        return data
+    except Exception as e:
+        # Re-raise so callers can surface the real error
+        raise RuntimeError(f"Open-Meteo API failed for ({latitude}, {longitude}): {e}") from e
 
 
 # WMO Weather interpretation codes

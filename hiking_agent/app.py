@@ -504,14 +504,9 @@ def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
     # 2. Weather
     try:
         wd = get_weather(lat, lon)
-        if not wd:
-            out["error"] = f"Weather API returned no data for ({lat:.4f}, {lon:.4f})."
-            return out
         out["weather_summary"] = get_todays_weather_summary(wd)
     except Exception as e:
-        import traceback
-        out["error"] = f"Weather error: {type(e).__name__}: {e}"
-        out["_traceback"] = traceback.format_exc()
+        out["error"] = f"Weather error: {e}"
         return out
 
     # 3. Time of day
