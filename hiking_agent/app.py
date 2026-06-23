@@ -423,7 +423,7 @@ section[data-testid="stSidebar"] { display: none; }
 """, unsafe_allow_html=True)
 
 
-# ── Groq ──────────────────────────────────────────────────────────────────────
+# ── Groq 
 @st.cache_resource
 def get_groq_client():
     key = os.environ.get("GROQ_API_KEY", "")
@@ -433,7 +433,7 @@ def get_groq_client():
     return Groq(api_key=key)
 
 
-# ── Memory ────────────────────────────────────────────────────────────────────
+# ── Memory 
 def _trim_history(messages, n=MAX_HISTORY):
     sys  = [m for m in messages if m["role"] == "system"]
     chat = [m for m in messages if m["role"] != "system"]
@@ -444,7 +444,7 @@ def _memory_note(memory):
     return "\n\nUser preferences:\n" + "\n".join(f"- {m}" for m in memory)
 
 
-# ── LLM ───────────────────────────────────────────────────────────────────────
+# ── LLM ─
 def query_model(system_prompt, user_prompt, messages=None, memory=None, retries=2):
     client = get_groq_client()
     if messages is None: messages = []
@@ -483,7 +483,7 @@ def is_final_answer(messages):
         return False
 
 
-# ── Pipeline ──────────────────────────────────────────────────────────────────
+# ── Pipeline
 # NOTE: browser_lang passed as argument - session_state not accessible
 # inside @st.cache_data functions
 @st.cache_data(show_spinner=False)
@@ -573,32 +573,30 @@ def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
     return out
 
 
-# ════════════════════════════════════════════════════════════════════
+
 # SESSION STATE
-# ════════════════════════════════════════════════════════════════════
+
 for k, v in [("done", False), ("history", []), ("memory", []),
              ("chat", []), ("result", None), ("get_location", False)]:
     if k not in st.session_state:
         st.session_state[k] = v
 
 
-# ════════════════════════════════════════════════════════════════════
+
 # LAYOUT WRAPPER
-# ════════════════════════════════════════════════════════════════════
+
 st.markdown('<div style="padding: 0 24px;">', unsafe_allow_html=True)
 
-# ── Nav ───────────────────────────────────────────────────────────
+# Nav
 st.markdown("""
 <div class="nav">
-  <div class="nav-logo">trail·finder</div>
-  <div class="nav-links">Free · Open Source · Worldwide</div>
+  <div class="nav-logo">Trail finder</div>
+  <div class="nav-links">Free | Open Source | Worldwide</div>
 </div>
 """, unsafe_allow_html=True)
 
-
-# ════════════════════════════════════════════════════════════════════
 # HERO
-# ════════════════════════════════════════════════════════════════════
+
 if not st.session_state.done:
     st.markdown("""
     <div class="hero">
@@ -669,9 +667,8 @@ if not st.session_state.done:
 
 
 
-# ════════════════════════════════════════════════════════════════════
+
 # RESULTS
-# ════════════════════════════════════════════════════════════════════
 if st.session_state.get("done", False):
     r = st.session_state.result
 
@@ -693,7 +690,7 @@ if st.session_state.get("done", False):
             st.rerun()
         st.stop()
 
-    # ── Status bar ────────────────────────────────────────────────
+    # ── Status bar
     st.markdown(f"""
     <div class="status-bar">
       <div class="stat">
@@ -711,7 +708,7 @@ if st.session_state.get("done", False):
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Park list ─────────────────────────────────────────────────
+    # ── Park list
     parks  = r.get("parks", [])
     trails = r.get("trails", {})
 
@@ -740,13 +737,13 @@ if st.session_state.get("done", False):
     <div class="park-list">{rows}</div>
     """, unsafe_allow_html=True)
 
-    # ── Recommendation ────────────────────────────────────────────
+    # ── Recommendation
     st.markdown(f"""
     <div class="sec-label">Today's recommendation</div>
     <div class="rec-block">{r['recommendations'].replace(chr(10), '<br>')}</div>
     """, unsafe_allow_html=True)
 
-    # ── Chat ──────────────────────────────────────────────────────
+    # ── Chat
     st.markdown('<div class="sec-label">Ask a follow-up</div>', unsafe_allow_html=True)
 
     if st.session_state.memory:
