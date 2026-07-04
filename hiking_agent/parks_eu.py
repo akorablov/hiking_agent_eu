@@ -2,13 +2,16 @@ import requests
 import time
 import math
 
-# Overpass mirrors tried in order. Maps.mail.ru removed (returns 403).
-# Endpoints are tried with exponential backoff on 429/504.
+# Overpass mirrors tried in order.
+# lz4 and z subdomains are separate load-balanced instances of overpass-api.de
+# and are often less congested than the main endpoint.
 OVERPASS_ENDPOINTS = [
-    "https://overpass-api.de/api/interpreter",
-    "https://overpass.kumi.systems/api/interpreter",
-    "https://overpass.osm.ch/api/interpreter",
+    "https://lz4.overpass-api.de/api/interpreter",   # less loaded subdomain
+    "https://z.overpass-api.de/api/interpreter",      # second subdomain
+    "https://overpass.osm.ch/api/interpreter",         # Swiss OSM, reliable
     "https://overpass.openstreetmap.ru/api/interpreter",
+    "https://overpass-api.de/api/interpreter",         # main, as last resort
+    "https://overpass.kumi.systems/api/interpreter",
 ]
 
 MAX_PARKS = 6
@@ -142,7 +145,7 @@ def _post_overpass(query, timeout=45):
                     endpoint,
                     data={"data": query},
                     headers=headers,
-                    timeout=timeout,
+                    timeout=max(timeout, 60),  # minimum 60s for HF Spaces
                 )
                 if r.status_code == 429:
                     wait = 5 * (attempt + 1)
@@ -188,7 +191,7 @@ def get_parks(latitude, longitude, radius_km=25):
     # Broad query: nodes + ways + relations, all meaningful natural/protected tags.
     # No protect_class filter - we want small unknown local areas too.
     query = f"""
-    [out:json][timeout:40];
+    [out:json][timeout:55];
     (
       node["boundary"="national_park"](around:{radius_m},{latitude},{longitude});
       way["boundary"="national_park"](around:{radius_m},{latitude},{longitude});
@@ -354,8 +357,8 @@ def get_trails_for_parks(parks, radius_km=10):
     """
 
     print("Fetching trails (single batched request)...")
-    time.sleep(1)
-    data = _post_overpass(query, timeout=60)
+    time.sleep(2)
+    data = _post_overpass(query, timeout=90)
 
     if not data:
         print("  Could not fetch trails - recommending areas without trail detail.")

@@ -186,7 +186,7 @@ def main():
         print(f"\n❌ {e}\n")
         return
 
-    # ── 1. Location ───────────────────────────────────────────────────────────
+    # ── 1. Location — detect from IP, then let user confirm or override ─────────
     print("Detecting your location...")
     try:
         latitude, longitude, city, country = get_current_location()
@@ -200,7 +200,29 @@ def main():
         print(f"❌ Unexpected location error: {e}")
         return
 
-    print(f"Location detected: {city}, {country} ({latitude:.4f}, {longitude:.4f})")
+    print(f"Detected: {city}, {country} ({latitude:.4f}, {longitude:.4f})")
+
+    override = input(
+        "Press Enter to use this location, or type your city to override: "
+    ).strip()
+
+    if override:
+        try:
+            from geopy.geocoders import Nominatim
+            geolocator = Nominatim(user_agent="trail-finder-local/1.0")
+            loc = geolocator.geocode(override, language="en", timeout=10)
+            if not loc:
+                print(f"⚠  Could not find '{override}' — using detected location instead.")
+            else:
+                parts   = loc.address.split(", ")
+                city    = parts[0]
+                country = parts[-1]
+                latitude, longitude = loc.latitude, loc.longitude
+                print(f"Using: {city}, {country} ({latitude:.4f}, {longitude:.4f})")
+        except Exception as e:
+            print(f"⚠  Geocoding failed ({e}) — using detected location instead.")
+    else:
+        print(f"Using detected location: {city}, {country}")
 
     # ── 2. Weather ────────────────────────────────────────────────────────────
     print("Checking the weather near you...")
