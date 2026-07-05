@@ -428,7 +428,7 @@ section[data-testid="stSidebar"] { display: none; }
 def get_groq_client():
     key = os.environ.get("GROQ_API_KEY", "")
     if not key:
-        st.error("GROQ_API_KEY secret is missing. Add it in Space Settings → Secrets.")
+        st.error("GROQ_API_KEY secret is missing. Add it in Space Settings > Secrets.")
         st.stop()
     return Groq(api_key=key)
 
@@ -612,7 +612,7 @@ if not st.session_state.done:
 
     col_a, col_b, col_c = st.columns([1, 2, 1])
     with col_b:
-        go = st.button("Find walks near me →", use_container_width=True)
+        go = st.button("Find walks near me >", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
@@ -728,7 +728,7 @@ if st.session_state.get("done", False):
           </div>
           <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
             <span class="park-dist">{p['distance_km']} km</span>
-            <a class="map-btn" href="{gmaps_url}" target="_blank">Take me there →</a>
+            <a class="map-btn" href="{gmaps_url}" target="_blank">Take me there ></a>
           </div>
         </div>"""
 

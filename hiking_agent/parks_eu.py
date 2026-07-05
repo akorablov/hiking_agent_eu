@@ -128,10 +128,10 @@ def _post_overpass(query, timeout=45):
     Try each Overpass mirror in turn with exponential backoff on rate limits.
 
     Handles:
-      - 429 Too Many Requests  → wait and retry same endpoint (up to 2x)
-      - 504 Gateway Timeout    → skip to next mirror immediately
-      - Connection timeout      → skip to next mirror
-      - 403 Forbidden          → skip to next mirror (IP block / firewall)
+      - 429 Too Many Requests  > wait and retry same endpoint (up to 2x)
+      - 504 Gateway Timeout    > skip to next mirror immediately
+      - Connection timeout      > skip to next mirror
+      - 403 Forbidden          > skip to next mirror (IP block / firewall)
     """
     headers = {
         "User-Agent": "HikingAgent/1.0 (open-source project; github.com)",

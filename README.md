@@ -38,8 +38,8 @@ The coordinates are used only to find nearby green areas. Nothing is stored or t
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         PIPELINE OVERVIEW                               │
+┌───────────────────────────────────────────────────────────────────────┐
+│                         PIPELINE OVERVIEW                             │
 ├─────────┬─────────┬──────────┬─────────┬─────────┬─────────┬──────────┤
 │ STEP 1  │ STEP 2  │  STEP 3  │ STEP 4  │ STEP 5  │ STEP 6  │  STEP 7  │
 │         │         │          │         │         │         │          │
@@ -54,11 +54,11 @@ The coordinates are used only to find nearby green areas. Nothing is stored or t
                   (skips all API calls)
 ```
 
-### Data sources - all free, no keys required
+### Data sources, all free, no keys required
 
 | Source | Provides | Cost |
 |--------|----------|------|
-| [geocoder](https://geocoder.readthedocs.io) | IP > lat/lon/city/country | Free · no key |
+| ip-api.com · ipapi.co · ipinfo.io | IP > lat/lon/city/country (4 sources) | Free · no key |
 | [Open-Meteo](https://open-meteo.com) | Hourly weather forecast, global | Free · no key |
 | [Overpass API](https://overpass-api.de) / OSM | Parks, reserves, forests, trails | Free · no key |
 | [Ollama (local/online)](https://ollama.ai) / [Groq API](https://console.groq.com) | Cloud LLM inference | Free ~ 14,400 req/day |
@@ -77,8 +77,9 @@ hiking-agent/
 ├── hiking_agent.ipynb     # Annotated walkthrough notebook with 11 live tests
 ├── *app.py                # Deployment. Streamlit web UI (Hugging Face Spaces / Docker)
 ├── *Dockerfile            # Deployment. Docker build instructions for HF Spaces
+├── *README.md             # Deployment. Formatting settings for Huggingface.co
 ├── *requirements.txt      # Deployment. Python dependencies for cloud deploy
-└── *README.md
+└── README.md
 ```
 ---
 
@@ -207,7 +208,7 @@ All settings live at the top of `main_eu.py` and `parks_eu.py`:
 
 ### 📍 Location detection
 
-`location_eu.py` resolves your public IP to a lat/lon coordinate using the `geocoder` library. Accuracy is typically 10-50 km, more than sufficient for a 25 km search radius. No GPS, no browser permissions, no personal data stored.
+`location_eu.py` resolves your public IP to a lat/lon coordinate using a chain of four free geolocation APIs (ip-api.com, ipapi.co, ipinfo.io, geolocation-db.com), falling back to the `geocoder` library if all else fails. The first successful result is used, giving city-level accuracy. No GPS, no browser permissions, no personal data stored.
 
 ### 🌤 Weather
 
@@ -249,7 +250,7 @@ Rather than one Overpass HTTP request per park (which caused cascading 429 rate-
 
 | Area | Detail |
 |------|--------|
-| **IP geolocation** | City-level accuracy (~10-50 km). Rural users may get the nearest town as their position |
+| **IP geolocation** | City-level accuracy (~1-10 km). Four APIs tried in sequence for best result. Rural users may get the nearest town |
 | **OSM coverage** | Western Europe and North America are very well mapped. Parts of Africa, Central Asia, and rural South America have sparser data |
 | **Overpass availability** | Public mirrors are best-effort. The fallback list covers major parks on every continent but cannot replicate live OSM richness |
 | **Trail difficulty** | Relies on the `sac_scale` OSM tag, which is not universally applied. `Unknown` difficulty means unrated in OSM, not dangerous |
