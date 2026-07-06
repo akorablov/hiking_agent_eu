@@ -93,7 +93,7 @@ section[data-testid="stSidebar"] { display: none; }
   font-weight: 300;
   line-height: 1.1;
   color: var(--white);
-  margin-bottom: 20px;
+  margin-bottom: 6px;
   letter-spacing: -1.5px;
 }
 .hero-h1 span {
@@ -107,7 +107,7 @@ section[data-testid="stSidebar"] { display: none; }
   line-height: 1.7;
   color: var(--mid);
   max-width: 440px;
-  margin-bottom: 40px;
+  margin-bottom: 25px;
 }
 
 /* ── MAIN CTA BUTTON ── */
@@ -165,8 +165,8 @@ section[data-testid="stSidebar"] { display: none; }
 /* ── STATUS BAR ── */
 .status-bar {
   display: flex;
-  gap: 32px;
-  padding: 20px 24px;
+  justify-content: space-between;
+  padding: 20px 28px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -357,24 +357,22 @@ section[data-testid="stSidebar"] { display: none; }
 .map-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 1px;
+  font-size: 9px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--green);
-  border: 1px solid rgba(74,222,128,0.3);
-  border-radius: 4px;
-  padding: 3px 10px;
+  color: var(--mid);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 8px;
   text-decoration: none;
-  transition: background 0.15s, border-color 0.15s;
+  transition: color 0.15s, border-color 0.15s;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .map-btn:hover {
-  background: rgba(74,222,128,0.08);
-  border-color: var(--green);
   color: var(--green);
+  border-color: rgba(74,222,128,0.4);
   text-decoration: none;
 }
 
