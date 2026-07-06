@@ -142,7 +142,7 @@ pip install geocoder requests ollama
 
 ### 4 · Set your model
 
-Open `main_eu.py` and update line 6:
+Open `main_eu.py` and update line 7:
 
 ```python
 MODEL = "llama3"   # must match exactly what `ollama list` shows
