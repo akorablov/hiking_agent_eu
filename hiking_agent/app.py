@@ -133,14 +133,15 @@ section[data-testid="stSidebar"] { display: none; }
 /* ── STEPS ROW ── */
 .steps {
   display: flex;
-  gap: 0;
+  justify-content: space-between;
   margin-top: 28px;
   border-top: 1px solid var(--border);
   padding-top: 20px;
 }
 .step {
   flex: 1;
-  padding-right: 16px;
+  text-align: center;
+  padding: 0 8px;
 }
 .step-num {
   font-family: 'DM Mono', monospace;
@@ -608,9 +609,9 @@ if not st.session_state.done:
 
     from streamlit_js_eval import streamlit_js_eval, get_geolocation
 
-    col_a, col_b, col_c = st.columns([1, 2, 1])
+    col_a, col_b, col_c = st.columns([1, 1, 1])
     with col_b:
-        go = st.button("Find walks near me >", use_container_width=True)
+        go = st.button("Find walks near me →", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
