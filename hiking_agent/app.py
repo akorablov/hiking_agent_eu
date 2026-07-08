@@ -166,33 +166,28 @@ section[data-testid="stSidebar"] { display: none; }
 .status-bar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 14px 16px;
+  padding: 20px 28px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   margin-bottom: 48px;
-  gap: 8px;
 }
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-width: 0;
+  gap: 4px;
 }
 .stat-label {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--mid);
-  white-space: nowrap;
 }
 .stat-value {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   color: var(--white);
-  word-break: break-word;
 }
 .stat-dot {
   display: inline-block;
@@ -218,15 +213,16 @@ section[data-testid="stSidebar"] { display: none; }
 .park-list { margin-bottom: 48px; }
 .park-row {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 14px 0;
   border-bottom: 1px solid var(--border);
+  gap: 12px;
 }
 .park-row:first-child { border-top: 1px solid var(--border); }
 .park-name-col {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 10px;
   flex: 1;
   min-width: 0;
@@ -244,15 +240,16 @@ section[data-testid="stSidebar"] { display: none; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
+  max-width: 100%;
+  line-height: 1.3;
 }
 .park-type {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   color: var(--mid);
   letter-spacing: 0.5px;
-  margin-left: 6px;
-  flex-shrink: 0;
+  display: block;
+  margin-top: 2px;
 }
 .park-dist {
   font-family: 'DM Mono', monospace;
@@ -364,13 +361,13 @@ section[data-testid="stSidebar"] { display: none; }
   display: inline-flex;
   align-items: center;
   font-family: 'DM Mono', monospace;
-  font-size: 8px;
-  letter-spacing: 1px;
+  font-size: 9px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--mid);
   border: 1px solid var(--border);
   border-radius: 3px;
-  padding: 2px 6px;
+  padding: 2px 8px;
   text-decoration: none;
   transition: color 0.15s, border-color 0.15s;
   white-space: nowrap;
@@ -727,12 +724,14 @@ if st.session_state.get("done", False):
         <div class="park-row">
           <div class="park-name-col">
             <span class="park-num">0{i+1}</span>
-            <span class="park-name">{p['name']}</span>
-            <span class="park-type">{p['type']} · {t_str}</span>
+            <div style="display:flex;flex-direction:column;min-width:0;">
+              <span class="park-name">{p['name']}</span>
+              <span class="park-type">{p['type']} · {t_str}</span>
+            </div>
           </div>
-          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;min-width:90px;text-align:right;">
             <span class="park-dist">{p['distance_km']} km</span>
-            <a class="map-btn" href="{gmaps_url}" target="_blank">Take me there ></a>
+            <a class="map-btn" href="{gmaps_url}" target="_blank" style="text-align:right;">Take me there</a>
           </div>
         </div>"""
 
