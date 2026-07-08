@@ -6,7 +6,7 @@ from weather import get_weather, get_todays_weather_summary
 from location_eu import get_current_location
 from parks_eu import get_parks, get_trails_for_parks
 
-MODEL       = "gpt-oss:120b-cloud"
+MODEL       = "llama-3.3-70b-versatile"
 MAX_HISTORY = 20
 
 st.set_page_config(
