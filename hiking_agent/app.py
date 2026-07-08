@@ -133,15 +133,14 @@ section[data-testid="stSidebar"] { display: none; }
 /* ── STEPS ROW ── */
 .steps {
   display: flex;
-  justify-content: space-between;
+  gap: 0;
   margin-top: 28px;
   border-top: 1px solid var(--border);
   padding-top: 20px;
 }
 .step {
   flex: 1;
-  text-align: center;
-  padding: 0 8px;
+  padding-right: 16px;
 }
 .step-num {
   font-family: 'DM Mono', monospace;
@@ -167,28 +166,33 @@ section[data-testid="stSidebar"] { display: none; }
 .status-bar {
   display: flex;
   justify-content: space-between;
-  padding: 20px 28px;
+  align-items: flex-start;
+  padding: 14px 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   margin-bottom: 48px;
+  gap: 8px;
 }
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  min-width: 0;
 }
 .stat-label {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--mid);
+  white-space: nowrap;
 }
 .stat-value {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   color: var(--white);
+  word-break: break-word;
 }
 .stat-dot {
   display: inline-block;
@@ -234,12 +238,13 @@ section[data-testid="stSidebar"] { display: none; }
   flex-shrink: 0;
 }
 .park-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 400;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 160px;
 }
 .park-type {
   font-family: 'DM Mono', monospace;
@@ -359,13 +364,13 @@ section[data-testid="stSidebar"] { display: none; }
   display: inline-flex;
   align-items: center;
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 1.5px;
+  font-size: 8px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--mid);
   border: 1px solid var(--border);
   border-radius: 3px;
-  padding: 2px 8px;
+  padding: 2px 6px;
   text-decoration: none;
   transition: color 0.15s, border-color 0.15s;
   white-space: nowrap;
@@ -609,9 +614,9 @@ if not st.session_state.done:
 
     from streamlit_js_eval import streamlit_js_eval, get_geolocation
 
-    col_a, col_b, col_c = st.columns([1, 1, 1])
+    col_a, col_b, col_c = st.columns([1, 2, 1])
     with col_b:
-        go = st.button("Find walks near me →", use_container_width=True)
+        go = st.button("Find walks near me >", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
