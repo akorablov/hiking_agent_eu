@@ -221,15 +221,16 @@ section[data-testid="stSidebar"] { display: none; }
 .park-list { margin-bottom: 48px; }
 .park-row {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 14px 0;
   border-bottom: 1px solid var(--border);
+  gap: 12px;
 }
 .park-row:first-child { border-top: 1px solid var(--border); }
 .park-name-col {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 10px;
   flex: 1;
   min-width: 0;
@@ -239,9 +240,17 @@ section[data-testid="stSidebar"] { display: none; }
   font-size: 11px;
   color: var(--muted);
   flex-shrink: 0;
+  padding-top: 2px;
+}
+.park-name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
 }
 .park-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 400;
   color: var(--text);
   white-space: nowrap;
@@ -250,10 +259,15 @@ section[data-testid="stSidebar"] { display: none; }
 }
 .park-type {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   color: var(--mid);
   letter-spacing: 0.5px;
-  margin-left: 6px;
+}
+.park-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
   flex-shrink: 0;
 }
 .park-dist {
@@ -730,12 +744,14 @@ if st.session_state.get("done", False):
         <div class="park-row">
           <div class="park-name-col">
             <span class="park-num">0{i+1}</span>
-            <span class="park-name">{p['name']}</span>
-            <span class="park-type">{p['type']} · {t_str}</span>
+            <div class="park-name-block">
+              <span class="park-name">{p['name']}</span>
+              <span class="park-type">{p['type']} · {t_str}</span>
+            </div>
           </div>
-          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+          <div class="park-right">
             <span class="park-dist">{p['distance_km']} km</span>
-            <a class="map-btn" href="{gmaps_url}" target="_blank">Take me there ></a>
+            <a class="map-btn" href="{gmaps_url}" target="_blank">Take me there</a>
           </div>
         </div>"""
 
