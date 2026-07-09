@@ -1,9 +1,9 @@
 import os, time
 import streamlit as st
 from groq import Groq
+from streamlit_js_eval import get_geolocation
 from location_eu import get_current_location
 from weather import get_weather, get_todays_weather_summary
-from location_eu import get_current_location
 from parks_eu import get_parks, get_trails_for_parks
 
 MODEL       = "llama-3.3-70b-versatile"
@@ -133,14 +133,15 @@ section[data-testid="stSidebar"] { display: none; }
 /* ── STEPS ROW ── */
 .steps {
   display: flex;
-  gap: 0;
+  justify-content: space-between;
   margin-top: 28px;
   border-top: 1px solid var(--border);
   padding-top: 20px;
 }
 .step {
   flex: 1;
-  padding-right: 16px;
+  text-align: center;
+  padding: 0 4px;
 }
 .step-num {
   font-family: 'DM Mono', monospace;
@@ -166,28 +167,35 @@ section[data-testid="stSidebar"] { display: none; }
 .status-bar {
   display: flex;
   justify-content: space-between;
-  padding: 20px 28px;
+  align-items: flex-start;
+  padding: 16px 20px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   margin-bottom: 48px;
+  gap: 8px;
 }
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
 }
 .stat-label {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--mid);
+  white-space: nowrap;
 }
 .stat-value {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   color: var(--white);
+  white-space: normal;
+  word-break: break-word;
 }
 .stat-dot {
   display: inline-block;
@@ -213,16 +221,15 @@ section[data-testid="stSidebar"] { display: none; }
 .park-list { margin-bottom: 48px; }
 .park-row {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
   padding: 14px 0;
   border-bottom: 1px solid var(--border);
-  gap: 12px;
 }
 .park-row:first-child { border-top: 1px solid var(--border); }
 .park-name-col {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   gap: 10px;
   flex: 1;
   min-width: 0;
@@ -234,22 +241,20 @@ section[data-testid="stSidebar"] { display: none; }
   flex-shrink: 0;
 }
 .park-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
-  line-height: 1.3;
 }
 .park-type {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--mid);
   letter-spacing: 0.5px;
-  display: block;
-  margin-top: 2px;
+  margin-left: 6px;
+  flex-shrink: 0;
 }
 .park-dist {
   font-family: 'DM Mono', monospace;
@@ -578,7 +583,8 @@ def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
 # SESSION STATE
 
 for k, v in [("done", False), ("history", []), ("memory", []),
-             ("chat", []), ("result", None), ("get_location", False)]:
+             ("chat", []), ("result", None), ("get_location", False),
+             ("pipeline_running", False)]:
     if k not in st.session_state:
         st.session_state[k] = v
 
@@ -609,11 +615,9 @@ if not st.session_state.done:
     </div>
     """, unsafe_allow_html=True)
 
-    from streamlit_js_eval import streamlit_js_eval, get_geolocation
-
-    col_a, col_b, col_c = st.columns([1, 2, 1])
+    col_a, col_b, col_c = st.columns([1, 1, 1])
     with col_b:
-        go = st.button("Find walks near me >", use_container_width=True)
+        go = st.button("Find walks near me →", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
@@ -639,22 +643,24 @@ if not st.session_state.done:
     if go:
         st.session_state["get_location"] = True
 
-    if st.session_state.get("get_location"):
-        with st.spinner("📍 Waiting for location permission…"):
-            loc = get_geolocation()
+    if st.session_state.get("get_location") and not st.session_state.get("pipeline_running"):
+        loc = get_geolocation()
         if loc and "coords" in loc:
+            # Immediately lock to prevent re-execution on next rerun
+            st.session_state["get_location"]     = False
+            st.session_state["pipeline_running"] = True
             lat = loc["coords"]["latitude"]
             lon = loc["coords"]["longitude"]
-            st.session_state["get_location"] = False
+            browser_lang = st.session_state.get("browser_lang", "en")
             with st.spinner("Checking weather · Finding nearby walks…"):
-                browser_lang = st.session_state.get("browser_lang", "en")
                 result = run_pipeline(lat, lon, browser_lang)
-                st.session_state.result = result
+            st.session_state["pipeline_running"] = False
+            st.session_state.result = result
             if "error" in result:
-                st.error(result["error"])
+                st.error(result.get("error", "Something went wrong."))
             elif not result.get("recommendations"):
-                st.warning("Could not generate recommendations - please try again.")
-                for k in ["done","history","memory","chat","result","get_location"]:
+                st.warning("Could not generate recommendations — please try again.")
+                for k in ["done","history","memory","chat","result","get_location","pipeline_running"]:
                     st.session_state.pop(k, None)
                 run_pipeline.clear()
                 st.rerun()
@@ -663,8 +669,8 @@ if not st.session_state.done:
                 st.session_state.history = result.get("message_history", [])
                 st.session_state.chat.append(("assistant", result["recommendations"]))
                 st.rerun()
-        else:
-            st.info("Please allow location access in the browser popup and wait…")
+        elif st.session_state.get("get_location"):
+            st.info("Allow location access in the browser popup…")
 
 
 
@@ -724,14 +730,12 @@ if st.session_state.get("done", False):
         <div class="park-row">
           <div class="park-name-col">
             <span class="park-num">0{i+1}</span>
-            <div style="display:flex;flex-direction:column;min-width:0;">
-              <span class="park-name">{p['name']}</span>
-              <span class="park-type">{p['type']} · {t_str}</span>
-            </div>
+            <span class="park-name">{p['name']}</span>
+            <span class="park-type">{p['type']} · {t_str}</span>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;min-width:90px;text-align:right;">
+          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
             <span class="park-dist">{p['distance_km']} km</span>
-            <a class="map-btn" href="{gmaps_url}" target="_blank" style="text-align:right;">Take me there</a>
+            <a class="map-btn" href="{gmaps_url}" target="_blank">Take me there ></a>
           </div>
         </div>"""
 
