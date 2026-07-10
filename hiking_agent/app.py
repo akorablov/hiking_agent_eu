@@ -624,7 +624,7 @@ st.markdown('<div style="padding: 0 24px;">', unsafe_allow_html=True)
 # Nav
 st.markdown("""
 <div class="nav">
-  <div class="nav-logo">Trail finder</div>
+  <div class="nav-logo">TRAIL FINDER</div>
   <div class="nav-links">Free | Open Source | Worldwide</div>
 </div>
 """, unsafe_allow_html=True)
@@ -644,7 +644,7 @@ if not st.session_state.done:
 
     col_a, col_b, col_c = st.columns([1, 1, 1])
     with col_b:
-        go = st.button("Find walks near me →", use_container_width=True)
+        go = st.button("Find walks near me", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
@@ -764,7 +764,7 @@ if st.session_state.get("done", False):
           </div>
           <div class="park-right">
             <span class="park-dist">{p['distance_km']} km</span>
-            <a class="map-btn" href="{gmaps_url}" target="_blank">Take me there</a>
+            <a class="map-btn" href="{gmaps_url}" target="_blank">Route</a>
           </div>
         </div>"""
 
