@@ -31,6 +31,7 @@ st.markdown("""
   --green:    #4ade80;
   --green-d:  #16a34a;
   --green-bg: rgba(74,222,128,0.06);
+  --mint-text: rgba(200,255,215,0.95);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -56,7 +57,7 @@ section[data-testid="stSidebar"] { display: none; }
 .nav-logo {
   font-family: 'DM Mono', monospace;
   font-size: 13px;
-  color: var(--green);
+  color: var(--mint-text);
   letter-spacing: 0.5px;
 }
 .nav-links {
@@ -74,7 +75,7 @@ section[data-testid="stSidebar"] { display: none; }
   font-size: 11px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--green);
+  color: var(--mint-text);
   margin-bottom: 20px;
   display: flex;
   align-items: center;
@@ -85,7 +86,7 @@ section[data-testid="stSidebar"] { display: none; }
   display: inline-block;
   width: 20px;
   height: 1px;
-  background: var(--green);
+  background: var(--mint-text);
 }
 
 .hero-h1 {
@@ -164,7 +165,7 @@ section[data-testid="stSidebar"] { display: none; }
 .step-num {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
-  color: var(--green);
+  color: var(--mint-text);
   margin-bottom: 8px;
 }
 .step-text {
