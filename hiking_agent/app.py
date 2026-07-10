@@ -1,4 +1,7 @@
 import os, time
+import concurrent.futures
+from datetime import datetime
+import reverse_geocoder as rg
 import streamlit as st
 from groq import Groq
 from streamlit_js_eval import get_geolocation
@@ -535,6 +538,32 @@ def is_final_answer(messages):
         return False
 
 
+# ── Individually cached, granular building blocks ──
+# Each is cached on its own inputs so a cache-miss in one (e.g. browser_lang
+# changing, which busts run_pipeline's cache) doesn't force refetching the rest.
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def _cached_reverse_geocode(lat: float, lon: float):
+    results = rg.search((lat, lon), verbose=False)
+    return results[0].get("name", "Unknown"), results[0].get("cc", "")
+
+
+@st.cache_data(show_spinner=False, ttl=600)
+def _cached_weather_summary(lat: float, lon: float):
+    wd = get_weather(lat, lon)
+    return get_todays_weather_summary(wd)
+
+
+@st.cache_data(show_spinner=False, ttl=600)
+def _cached_parks(lat: float, lon: float, radius_km: int = 25):
+    return get_parks(lat, lon, radius_km=radius_km)
+
+
+@st.cache_data(show_spinner=False, ttl=600)
+def _cached_trails(parks, radius_km: int = 10):
+    return get_trails_for_parks(parks, radius_km=radius_km)
+
+
 # ── Pipeline
 # NOTE: browser_lang passed as argument - session_state not accessible
 # inside @st.cache_data functions
@@ -542,27 +571,37 @@ def is_final_answer(messages):
 def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
     out = {"recommendations": "", "message_history": []}
 
-    # 1. Reverse geocode coordinates to city name
-    try:
-        import reverse_geocoder as rg
-        results = rg.search((lat, lon), verbose=False)
-        city    = results[0].get("name", "Unknown")
-        country = results[0].get("cc", "")
-        out.update(lat=lat, lon=lon, city=city, country=country)
-    except Exception:
-        city, country = "Your location", ""
+    # 1-2-4. Reverse geocode, weather, and parks are all independent of each
+    # other (each only needs lat/lon), so run them concurrently instead of
+    # waiting on each network/lookup call in sequence.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as ex:
+        geo_future     = ex.submit(_cached_reverse_geocode, lat, lon)
+        weather_future = ex.submit(_cached_weather_summary, lat, lon)
+        parks_future   = ex.submit(_cached_parks, lat, lon, 25)
+
+        try:
+            city, country = geo_future.result()
+        except Exception:
+            city, country = "Your location", ""
         out.update(lat=lat, lon=lon, city=city, country=country)
 
-    # 2. Weather
-    try:
-        wd = get_weather(lat, lon)
-        out["weather_summary"] = get_todays_weather_summary(wd)
-    except Exception as e:
-        out["error"] = f"Weather error: {e}"
-        return out
+        try:
+            out["weather_summary"] = weather_future.result()
+        except Exception as e:
+            out["error"] = f"Weather error: {e}"
+            return out
+
+        try:
+            parks = parks_future.result()
+            if not parks:
+                out["error"] = f"No green areas found near {city} within 25 km."
+                return out
+            out["parks"] = parks
+        except Exception as e:
+            out["error"] = str(e)
+            return out
 
     # 3. Time of day
-    from datetime import datetime
     hour = datetime.now().hour
     if hour < 12:   time_of_day = "morning"
     elif hour < 17: time_of_day = "afternoon"
@@ -570,20 +609,9 @@ def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
     else:           time_of_day = "night"
     out["time_of_day"] = time_of_day
 
-    # 4. Parks
+    # 5. Trails (depends on parks, so it has to run after that resolves)
     try:
-        parks = get_parks(lat, lon, radius_km=25)
-        if not parks:
-            out["error"] = f"No green areas found near {city} within 25 km."
-            return out
-        out["parks"] = parks
-    except Exception as e:
-        out["error"] = str(e)
-        return out
-
-    # 5. Trails
-    try:
-        out["trails"] = get_trails_for_parks(parks, radius_km=10)
+        out["trails"] = _cached_trails(parks, 10)
     except Exception:
         out["trails"] = {p["name"]: [] for p in parks}
 

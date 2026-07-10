@@ -18,7 +18,7 @@ tags:
   - travel
   - python
 thumbnail: >-
-  https://cdn-uploads.huggingface.co/production/uploads/69fcd0925c1f78636c77a6d9/JLiZvViSA8S3-EvLXQYaC.png
+  https://cdn-uploads.huggingface.co/production/uploads/69fcd0925c1f78636c77a6d9/REauC7alyod2t4Igx7FQP.png
 short_description: Find the best walk near you, anywhere in the world
 ---
 # 🥾 Trail Finder
