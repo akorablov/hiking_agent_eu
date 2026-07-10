@@ -168,10 +168,12 @@ section[data-testid="stSidebar"] { display: none; }
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 16px 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(74,222,128,0.05) 0%, rgba(74,222,128,0.01) 100%);
+  border: 1px solid rgba(150,255,180,0.12);
+  border-radius: 20px;
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.06);
   margin-bottom: 48px;
   gap: 8px;
 }
@@ -280,9 +282,11 @@ section[data-testid="stSidebar"] { display: none; }
 
 /* ── RECOMMENDATION ── */
 .rec-block {
-  background: var(--green-bg);
-  border: 1px solid rgba(74,222,128,0.15);
-  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(74,222,128,0.08) 0%, rgba(74,222,128,0.02) 100%);
+  border: 1px solid rgba(150,255,180,0.15);
+  border-radius: 20px;
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.06);
   padding: 28px 28px;
   margin-bottom: 48px;
   font-size: 16px;
@@ -303,9 +307,11 @@ section[data-testid="stSidebar"] { display: none; }
 }
 .chat-msg-user > div {
   display: inline-block;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px 16px 4px 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px 20px 6px 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.06);
   padding: 12px 18px;
   font-size: 15px;
   color: var(--text);
@@ -339,11 +345,13 @@ section[data-testid="stSidebar"] { display: none; }
 .mem-pill {
   font-family: 'DM Mono', monospace;
   font-size: 10px;
-  color: var(--green);
-  background: var(--green-bg);
-  border: 1px solid rgba(74,222,128,0.2);
-  border-radius: 20px;
-  padding: 4px 12px;
+  color: rgba(200,255,215,0.85);
+  background: linear-gradient(135deg, rgba(74,222,128,0.14) 0%, rgba(74,222,128,0.03) 100%);
+  border: 1px solid rgba(150,255,180,0.2);
+  border-radius: 999px;
+  padding: 5px 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.12);
   letter-spacing: 0.3px;
 }
 
@@ -358,16 +366,17 @@ section[data-testid="stSidebar"] { display: none; }
 
 /* ── STREAMLIT CHAT INPUT ── */
 .stChatInput textarea {
-  background: var(--surface) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
+  background: linear-gradient(135deg, rgba(74,222,128,0.06) 0%, rgba(74,222,128,0.01) 100%) !important;
+  border: 1px solid rgba(150,255,180,0.15) !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(12px) !important;
   color: var(--text) !important;
   font-family: 'DM Sans', sans-serif !important;
   font-size: 15px !important;
 }
 .stChatInput textarea:focus {
-  border-color: var(--green) !important;
-  box-shadow: 0 0 0 3px rgba(74,222,128,0.1) !important;
+  border-color: rgba(150,255,180,0.35) !important;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.08), 0 0 0 3px rgba(74,222,128,0.1) !important;
 }
 .stChatInput button {
   background: var(--green) !important;
@@ -383,18 +392,22 @@ section[data-testid="stSidebar"] { display: none; }
   font-size: 9px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--mid);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 2px 8px;
+  color: rgba(200,255,215,0.7);
+  background: linear-gradient(135deg, rgba(74,222,128,0.14) 0%, rgba(74,222,128,0.03) 100%);
+  border: 1px solid rgba(150,255,180,0.2);
+  border-radius: 999px;
+  padding: 5px 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.15);
   text-decoration: none;
-  transition: color 0.15s, border-color 0.15s;
+  transition: all 0.2s ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .map-btn:hover {
-  color: var(--green);
-  border-color: rgba(74,222,128,0.4);
+  color: rgba(200,255,215,0.95);
+  border-color: rgba(150,255,180,0.3);
+  background: linear-gradient(135deg, rgba(74,222,128,0.2) 0%, rgba(74,222,128,0.06) 100%);
   text-decoration: none;
 }
 
