@@ -112,21 +112,34 @@ section[data-testid="stSidebar"] { display: none; }
 
 /* ── MAIN CTA BUTTON ── */
 .stButton > button {
-  background: var(--green) !important;
-  color: #0a0a0a !important;
-  border: none !important;
-  border-radius: 6px !important;
+  background: linear-gradient(135deg, rgba(74,222,128,0.22) 0%, rgba(74,222,128,0.06) 100%) !important;
+  color: rgba(200,255,215,0.95) !important;
+  border: 1px solid rgba(150,255,180,0.3) !important;
+  border-radius: 999px !important;
   font-family: 'DM Sans', sans-serif !important;
   font-size: 15px !important;
   font-weight: 500 !important;
   letter-spacing: 0.2px !important;
-  padding: 14px 32px !important;
-  transition: opacity 0.2s, transform 0.15s !important;
+  padding: 16px 36px !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.25),
+    inset 0 -2px 4px rgba(0,0,0,0.15),
+    0 8px 24px rgba(74,222,128,0.15),
+    0 2px 8px rgba(0,0,0,0.3) !important;
+  transition: all 0.25s ease !important;
   cursor: pointer !important;
   width: auto !important;
 }
 .stButton > button:hover {
-  opacity: 0.88 !important;
+  background: linear-gradient(135deg, rgba(74,222,128,0.3) 0%, rgba(74,222,128,0.1) 100%) !important;
+  border-color: rgba(150,255,180,0.4) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    inset 0 -2px 4px rgba(0,0,0,0.15),
+    0 10px 32px rgba(74,222,128,0.2),
+    0 4px 12px rgba(0,0,0,0.3) !important;
   transform: translateY(-1px) !important;
 }
 
@@ -624,7 +637,7 @@ st.markdown('<div style="padding: 0 24px;">', unsafe_allow_html=True)
 # Nav
 st.markdown("""
 <div class="nav">
-  <div class="nav-logo">TRAIL FINDER</div>
+  <div class="nav-logo">Trail finder</div>
   <div class="nav-links">Free | Open Source | Worldwide</div>
 </div>
 """, unsafe_allow_html=True)
@@ -644,7 +657,7 @@ if not st.session_state.done:
 
     col_a, col_b, col_c = st.columns([1, 1, 1])
     with col_b:
-        go = st.button("Find walks near me", use_container_width=True)
+        go = st.button("Find walks near me →", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
