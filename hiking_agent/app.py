@@ -111,6 +111,11 @@ section[data-testid="stSidebar"] { display: none; }
 }
 
 /* ── MAIN CTA BUTTON ── */
+.stButton {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
 .stButton > button {
   background: linear-gradient(135deg, rgba(74,222,128,0.22) 0%, rgba(74,222,128,0.06) 100%) !important;
   color: rgba(200,255,215,0.95) !important;
