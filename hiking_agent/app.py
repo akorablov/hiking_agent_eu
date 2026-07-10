@@ -657,7 +657,7 @@ if not st.session_state.done:
 
     col_a, col_b, col_c = st.columns([1, 1, 1])
     with col_b:
-        go = st.button("Find walks near me →", use_container_width=True)
+        go = st.button("Find walks near me", use_container_width=True)
 
     st.markdown("""
     <div class="steps">
