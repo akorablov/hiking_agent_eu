@@ -567,21 +567,21 @@ def _cached_weather_summary(lat: float, lon: float):
 
 import re as _re
 _WEATHER_RE = _re.compile(
-    r"^(?:.*?:\s*)?(?P<desc>.+?),\s*with an average temperature of\s*"
-    r"(?P<temp>-?\d+)\s*°C.*$"
+    r"^(?:.*?:\s*)?(?P<desc>.+?),\s*with temperatures ranging from\s*"
+    r"(?P<tmin>-?\d+)\s*°C\s*to\s*(?P<tmax>-?\d+)\s*°C.*$"
 )
 
 def _format_weather_display(summary: str) -> str:
     """Turn weather.py's verbose summary
-    ("Today's forecast: Partly cloudy, with an average temperature of 22°C
-    and a maximum precipitation probability of 3%.") into a short
-    "Partly cloudy, ~22°C" for the status-bar stat."""
+    ("Today's forecast: Partly cloudy, with temperatures ranging from 18°C to
+    25°C (average 22°C) and a maximum precipitation probability of 3%.") into
+    a short "Partly cloudy, 18°C-25°C" for the status-bar stat."""
     if not summary:
         return ""
     m = _WEATHER_RE.match(summary.strip())
     if not m:
         return summary.strip()
-    return f"{m.group('desc').strip()}, ~{m.group('temp')}°C"
+    return f"{m.group('desc').strip()}, {m.group('tmin')}°C-{m.group('tmax')}°C"
 
 
 @st.cache_data(show_spinner=False, ttl=600)

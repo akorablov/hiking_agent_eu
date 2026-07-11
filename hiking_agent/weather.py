@@ -97,13 +97,16 @@ def get_todays_weather_summary(weather_data):
         return "Could not get a weather summary for today."
 
     avg_temp = round(statistics.mean(daylight_temps))
+    min_temp = round(min(daylight_temps))
+    max_temp = round(max(daylight_temps))
     max_precip = max(daylight_precip_probs) if daylight_precip_probs else 0
     most_common_code = statistics.mode(daylight_codes) if daylight_codes else 0
     weather_description = WMO_CODES.get(most_common_code, "unknown weather")
 
     summary = (
-        f"Today's forecast: {weather_description}, with an average temperature of "
-        f"{avg_temp}°C and a maximum precipitation probability of {max_precip}%."
+        f"Today's forecast: {weather_description}, with temperatures ranging from "
+        f"{min_temp}°C to {max_temp}°C (average {avg_temp}°C) and a maximum "
+        f"precipitation probability of {max_precip}%."
     )
     return summary
 
