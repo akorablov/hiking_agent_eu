@@ -565,24 +565,23 @@ def _cached_weather_summary(lat: float, lon: float):
     return get_todays_weather_summary(wd)
 
 
+import re as _re
+_WEATHER_RE = _re.compile(
+    r"^(?:.*?:\s*)?(?P<desc>.+?),\s*with an average temperature of\s*"
+    r"(?P<temp>-?\d+)\s*°C.*$"
+)
+
 def _format_weather_display(summary: str) -> str:
-    """Turn a raw weather summary like "Today's forecast: Partly cloudy, 22°C, ..."
-    into a compact "Partly cloudy, 22°C" for the status-bar stat, dropping the
-    leading label and any parts beyond description + temperature."""
+    """Turn weather.py's verbose summary
+    ("Today's forecast: Partly cloudy, with an average temperature of 22°C
+    and a maximum precipitation probability of 3%.") into a short
+    "Partly cloudy, ~22°C" for the status-bar stat."""
     if not summary:
         return ""
-    s = summary.strip()
-    first, sep, rest = s.partition(",")
-    # Drop a leading "Label:" (e.g. "Today's forecast:") if the first segment has one
-    if ":" in first:
-        first = first.split(":", 1)[1].strip()
-    parts = [first] + [p.strip() for p in rest.split(",")] if sep else [first]
-    parts = [p for p in parts if p]
-    # Keep description + a temperature-looking part (contains ° or a unit)
-    import re
-    temp_part = next((p for p in parts[1:] if re.search(r"\d\s*°|\d\s*°?\s*[CF]\b", p)), None)
-    kept = [parts[0]] + ([temp_part] if temp_part else [])
-    return ", ".join(kept)
+    m = _WEATHER_RE.match(summary.strip())
+    if not m:
+        return summary.strip()
+    return f"{m.group('desc').strip()}, ~{m.group('temp')}°C"
 
 
 @st.cache_data(show_spinner=False, ttl=600)
@@ -764,7 +763,7 @@ if not st.session_state.done:
             if "error" in result:
                 st.error(result.get("error", "Something went wrong."))
             elif not result.get("recommendations"):
-                st.warning("Could not generate recommendations — please try again.")
+                st.warning("Could not generate recommendations - please try again.")
                 for k in ["done","history","memory","chat","result","get_location","pipeline_running"]:
                     st.session_state.pop(k, None)
                 run_pipeline.clear()
