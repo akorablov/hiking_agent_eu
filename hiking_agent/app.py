@@ -289,9 +289,9 @@ section[data-testid="stSidebar"] { display: none; }
 }
 .park-right {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   flex-shrink: 0;
 }
 .park-dist {
@@ -410,27 +410,38 @@ section[data-testid="stSidebar"] { display: none; }
 .map-btn {
   display: inline-flex;
   align-items: center;
-  font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(200,255,215,0.7);
-  background: linear-gradient(135deg, rgba(74,222,128,0.14) 0%, rgba(74,222,128,0.03) 100%);
-  border: 1px solid rgba(150,255,180,0.2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  text-transform: none;
+  color: rgba(200,255,215,0.95);
+  background: linear-gradient(135deg, rgba(74,222,128,0.22) 0%, rgba(74,222,128,0.06) 100%);
+  border: 1px solid rgba(150,255,180,0.3);
   border-radius: 999px;
   padding: 5px 14px;
-  backdrop-filter: blur(10px);
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.25),
+    inset 0 -2px 4px rgba(0,0,0,0.15),
+    0 4px 12px rgba(74,222,128,0.15),
+    0 1px 4px rgba(0,0,0,0.3);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .map-btn:hover {
   color: rgba(200,255,215,0.95);
-  border-color: rgba(150,255,180,0.3);
-  background: linear-gradient(135deg, rgba(74,222,128,0.2) 0%, rgba(74,222,128,0.06) 100%);
-  text-decoration: none;
+  border-color: rgba(150,255,180,0.4);
+  background: linear-gradient(135deg, rgba(74,222,128,0.3) 0%, rgba(74,222,128,0.1) 100%);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    inset 0 -2px 4px rgba(0,0,0,0.15),
+    0 6px 16px rgba(74,222,128,0.2),
+    0 2px 6px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
 }
 
 /* ── RESET LINK ── */
@@ -552,6 +563,26 @@ def _cached_reverse_geocode(lat: float, lon: float):
 def _cached_weather_summary(lat: float, lon: float):
     wd = get_weather(lat, lon)
     return get_todays_weather_summary(wd)
+
+
+def _format_weather_display(summary: str) -> str:
+    """Turn a raw weather summary like "Today's forecast: Partly cloudy, 22°C, ..."
+    into a compact "Partly cloudy, 22°C" for the status-bar stat, dropping the
+    leading label and any parts beyond description + temperature."""
+    if not summary:
+        return ""
+    s = summary.strip()
+    first, sep, rest = s.partition(",")
+    # Drop a leading "Label:" (e.g. "Today's forecast:") if the first segment has one
+    if ":" in first:
+        first = first.split(":", 1)[1].strip()
+    parts = [first] + [p.strip() for p in rest.split(",")] if sep else [first]
+    parts = [p for p in parts if p]
+    # Keep description + a temperature-looking part (contains ° or a unit)
+    import re
+    temp_part = next((p for p in parts[1:] if re.search(r"\d\s*°|\d\s*°?\s*[CF]\b", p)), None)
+    kept = [parts[0]] + ([temp_part] if temp_part else [])
+    return ", ".join(kept)
 
 
 @st.cache_data(show_spinner=False, ttl=600)
@@ -784,7 +815,7 @@ if st.session_state.get("done", False):
       </div>
       <div class="stat">
         <div class="stat-label">Weather</div>
-        <div class="stat-value">{r['weather_summary'].split(',')[0]}</div>
+        <div class="stat-value">{_format_weather_display(r['weather_summary'])}</div>
       </div>
     </div>
     """, unsafe_allow_html=True)
