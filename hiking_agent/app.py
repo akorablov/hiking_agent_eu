@@ -21,7 +21,8 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap');
 
 :root {
   --bg:       #0f0f0f;
@@ -41,7 +42,7 @@ st.markdown("""
 
 html, body, .stApp {
   background: var(--bg) !important;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Roboto', system-ui, sans-serif;
   color: var(--text);
 }
 
@@ -93,6 +94,7 @@ section[data-testid="stSidebar"] { display: none; }
 }
 
 .hero-h1 {
+  font-family: 'Satoshi', 'Roboto', sans-serif;
   font-size: 42px;
   font-weight: 300;
   line-height: 1.1;
@@ -125,7 +127,7 @@ section[data-testid="stSidebar"] { display: none; }
   color: rgba(200,255,215,0.95) !important;
   border: 1px solid rgba(150,255,180,0.3) !important;
   border-radius: 999px !important;
-  font-family: 'DM Sans', sans-serif !important;
+  font-family: 'Roboto', sans-serif !important;
   font-size: 15px !important;
   font-weight: 500 !important;
   letter-spacing: 0.2px !important;
@@ -393,7 +395,7 @@ section[data-testid="stSidebar"] { display: none; }
   border-radius: 20px !important;
   backdrop-filter: blur(12px) !important;
   color: var(--text) !important;
-  font-family: 'DM Sans', sans-serif !important;
+  font-family: 'Roboto', sans-serif !important;
   font-size: 15px !important;
 }
 .stChatInput textarea:focus {
@@ -410,39 +412,40 @@ section[data-testid="stSidebar"] { display: none; }
 .map-btn {
   display: inline-flex;
   align-items: center;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.2px;
+  font-family: 'Roboto', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.2px !important;
   text-transform: none;
-  color: rgba(200,255,215,0.95);
-  background: linear-gradient(135deg, rgba(74,222,128,0.22) 0%, rgba(74,222,128,0.06) 100%);
-  border: 1px solid rgba(150,255,180,0.3);
-  border-radius: 999px;
-  padding: 5px 14px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  color: rgba(200,255,215,0.95) !important;
+  background: linear-gradient(135deg, rgba(74,222,128,0.22) 0%, rgba(74,222,128,0.06) 100%) !important;
+  border: 1px solid rgba(150,255,180,0.3) !important;
+  border-radius: 999px !important;
+  padding: 5px 14px !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
   box-shadow:
     inset 0 1px 1px rgba(255,255,255,0.25),
     inset 0 -2px 4px rgba(0,0,0,0.15),
     0 4px 12px rgba(74,222,128,0.15),
-    0 1px 4px rgba(0,0,0,0.3);
-  text-decoration: none;
-  transition: all 0.25s ease;
+    0 1px 4px rgba(0,0,0,0.3) !important;
+  text-decoration: none !important;
+  transition: all 0.25s ease !important;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .map-btn:hover {
-  color: rgba(200,255,215,0.95);
-  border-color: rgba(150,255,180,0.4);
-  background: linear-gradient(135deg, rgba(74,222,128,0.3) 0%, rgba(74,222,128,0.1) 100%);
+  color: rgba(200,255,215,0.95) !important;
+  border-color: rgba(150,255,180,0.4) !important;
+  background: linear-gradient(135deg, rgba(74,222,128,0.3) 0%, rgba(74,222,128,0.1) 100%) !important;
   box-shadow:
     inset 0 1px 1px rgba(255,255,255,0.3),
     inset 0 -2px 4px rgba(0,0,0,0.15),
     0 6px 16px rgba(74,222,128,0.2),
-    0 2px 6px rgba(0,0,0,0.3);
-  transform: translateY(-1px);
+    0 2px 6px rgba(0,0,0,0.3) !important;
+  transform: translateY(-1px) !important;
 }
+.map-btn:visited { color: rgba(200,255,215,0.95) !important; }
 
 /* ── RESET LINK ── */
 .reset-wrap {
@@ -474,6 +477,7 @@ section[data-testid="stSidebar"] { display: none; }
   margin: 48px 0;
 }
 .weather-bad-title {
+  font-family: 'Satoshi', 'Roboto', sans-serif;
   font-size: 18px;
   font-weight: 500;
   color: var(--white);
