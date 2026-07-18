@@ -3,7 +3,7 @@
 <img src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Hiking%20boot/3D/hiking_boot_3d.png" width="96" alt="hiking boot"/>
 
 # Hiking & Walking Finder
-### AI-powered walk recommendations · Anywhere in the world · Zero cost
+### AI-powered walk recommendations - Anywhere in the world - Zero cost
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Hugging%20Face-yellow?style=flat-square)](https://huggingface.co/spaces/akorablov/trail-finder)
 
@@ -19,13 +19,13 @@ Run one command. The agent handles everything:
 
 | Step | What happens |
 |------|-------------|
-| 📍 **Locate** | Detects your city from your IP address - no GPS, no permissions |
-| 🌤 **Weather** | Fetches a live forecast for your exact coordinates |
-| 🤖 **Decide** | Asks the LLM *"is it a good day to go outside?"* - exits early if not |
-| 🗺 **Discover** | Finds every walkable green area within 25 km via OpenStreetMap |
-| 🥾 **Trails** | Fetches hiking routes for all areas in a single efficient request |
-| 💬 **Recommend** | Returns top 2-3 picks with practical, local-guide-style reasons |
-| 🔁 **Chat** | Answers follow-up questions with full conversation memory |
+|**Locate** | Detects your city from your IP address, no GPS, no permissions |
+|**Weather** | Fetches a live forecast for your exact coordinates |
+|**Decide** | Asks the LLM *"is it a good day to go outside?"*, exits early if not |
+|**Discover** | Finds every walkable green area within 25 km via OpenStreetMap |
+|**Trails** | Fetches hiking routes for all areas in a single efficient request |
+|**Recommend** | Returns top 2-3 picks with practical, local-guide-style reasons |
+|**Chat** | Answers follow-up questions with full conversation memory |
 
 When running **locally** via [main_eu.py](hiking_agent/main_eu.py), location is detected automatically from your public IP address, no permissions needed.
 
@@ -58,9 +58,9 @@ The coordinates are used only to find nearby green areas. Nothing is stored or t
 
 | Source | Provides | Cost |
 |--------|----------|------|
-| ip-api.com · ipapi.co · ipinfo.io | IP > lat/lon/city/country (4 sources) | Free · no key |
-| [Open-Meteo](https://open-meteo.com) | Hourly weather forecast, global | Free · no key |
-| [Overpass API](https://overpass-api.de) / OSM | Parks, reserves, forests, trails | Free · no key |
+| ip-api.com - ipapi.co - ipinfo.io - geolocation-db | IP > lat/lon/city/country (4 sources) | Free, no key |
+| [Open-Meteo](https://open-meteo.com) | Hourly weather forecast, global | Free, no key |
+| [Overpass API](https://overpass-api.de) / OSM | Parks, reserves, forests, trails | Free, no key |
 | [Ollama (local/online)](https://ollama.ai) / [Groq API](https://console.groq.com) | Cloud LLM inference | Free ~ 14,400 req/day |
 > **Total running cost: €0**
 
@@ -85,9 +85,9 @@ hiking-agent/
 
 ## Quick start
 
-### 1 · Install Ollama
+### 1 Install Ollama
 
-Ollama runs LLMs locally - no cloud account needed.
+Ollama runs LLMs locally, no cloud account needed.
 
 | Platform | Command / Installer |
 |----------|-------------------|
@@ -105,7 +105,7 @@ ollama --version
 
 ---
 
-### 2 · Pull a model
+### 2 Pull a model
 
 ```bash
 ollama pull llama3
@@ -128,7 +128,7 @@ ollama list
 
 ---
 
-### 3 · Install Python dependencies
+### 3 Install Python dependencies
 
 ```bash
 pip install geocoder requests ollama
@@ -140,7 +140,7 @@ pip install geocoder requests ollama
 
 ---
 
-### 4 · Set your model
+### 4 Set your model
 
 Open `main_eu.py` and update line 7:
 
@@ -150,7 +150,7 @@ MODEL = "llama3"   # must match exactly what `ollama list` shows
 
 ---
 
-### 5 · Run
+### 5 Run
 
 ```bash
 python main_eu.py
@@ -195,7 +195,7 @@ All settings live at the top of `main_eu.py` and `parks_eu.py`:
 
 | Setting | Default | Effect |
 |---------|---------|--------|
-| `MODEL` | `llama3` | Ollama model name - must match `ollama list` |
+| `MODEL` | `llama3` | Ollama model name > must match `ollama list` |
 | `MAX_PARKS` | `6` | Maximum number of areas returned |
 | `SEARCH_RADIUS_KM` | `25` | How far to look for green areas (km) |
 | `TRAIL_RADIUS_KM` | `10` | Trail search radius around each area centre (km) |
@@ -220,7 +220,7 @@ This is passed verbatim to the LLM as the go/no-go input.
 
 ### 🗺 Area discovery
 
-`parks_eu.py` queries the Overpass API with **deliberately broad OSM tags** - national parks, nature reserves, protected areas, named forests, regional parks, and local parks. Small and obscure local spots are included intentionally.
+`parks_eu.py` queries the Overpass API with **deliberately broad OSM tags**, national parks, nature reserves, protected areas, named forests, regional parks, and local parks. Small and obscure local spots are included intentionally.
 
 Results are then:
 - **Sorted by real haversine distance** from your position
@@ -254,7 +254,7 @@ Rather than one Overpass HTTP request per park (which caused cascading 429 rate-
 | **OSM coverage** | Western Europe and North America are very well mapped. Parts of Africa, Central Asia, and rural South America have sparser data |
 | **Overpass availability** | Public mirrors are best-effort. The fallback list covers major parks on every continent but cannot replicate live OSM richness |
 | **Trail difficulty** | Relies on the `sac_scale` OSM tag, which is not universally applied. `Unknown` difficulty means unrated in OSM, not dangerous |
-| **Language** | Area and trail names are returned in the local OSM language (Czech, German, etc.) - the LLM handles translation in its response |
+| **Language** | Area and trail names are returned in the local OSM language (Czech, German, etc.), the LLM handles translation in its response |
 
 ---
 
