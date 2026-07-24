@@ -1,19 +1,29 @@
+import random
+import time
+
 import requests
 from datetime import datetime, date
 import statistics
 
 
-def get_weather(latitude, longitude):
+def get_weather(latitude, longitude, retries=3, backoff_base=1.5):
     """
     Fetches hourly weather forecast data from the Open-Meteo API.
+
+    Retries with exponential backoff (+ jitter) on 429 (rate limited) and 5xx responses, since Open-Meteo rate-limits by source IP and a single
+    transient failure shouldn't take down the whole pipeline. If the API sends a `Retry-After` header, that's honoured instead of the computed backoff.
 
     Args:
         latitude (float): The latitude for the weather forecast.
         longitude (float): The longitude for the weather forecast.
+        retries (int): Number of attempts before giving up.
+        backoff_base (float): Base seconds for exponential backoff.
 
     Returns:
-        dict: A dictionary containing the API response with weather data,
-              or None if an error occurs.
+        dict: A dictionary containing the API response with weather data.
+
+    Raises:
+        RuntimeError: If the API call ultimately fails after all retries.
     """
     url = (
         f"https://api.open-meteo.com/v1/forecast"
@@ -21,17 +31,47 @@ def get_weather(latitude, longitude):
         f"&hourly=temperature_2m,precipitation_probability,weather_code"
         f"&timezone=auto"
     )
-    try:
-        response = requests.get(url, timeout=15)
-        response.raise_for_status()
-        data = response.json()
-        # Validate the response has the expected structure
-        if "hourly" not in data:
-            raise ValueError(f"Unexpected API response: {str(data)[:200]}")
-        return data
-    except Exception as e:
-        # Re-raise so callers can surface the real error
-        raise RuntimeError(f"Open-Meteo API failed for ({latitude}, {longitude}): {e}") from e
+
+    last_error = None
+    for attempt in range(retries):
+        try:
+            response = requests.get(url, timeout=15)
+
+            if response.status_code == 429 or response.status_code >= 500:
+                retry_after = response.headers.get("Retry-After")
+                if retry_after is not None:
+                    wait = float(retry_after)
+                else:
+                    wait = (backoff_base ** attempt) + random.uniform(0, 0.5)
+                last_error = RuntimeError(
+                    f"Open-Meteo returned {response.status_code} for "
+                    f"({latitude}, {longitude})"
+                )
+                if attempt < retries - 1:
+                    time.sleep(wait)
+                    continue
+                break
+
+            response.raise_for_status()
+            data = response.json()
+            # Validate the response has the expected structure
+            if "hourly" not in data:
+                raise ValueError(f"Unexpected API response: {str(data)[:200]}")
+            return data
+
+        except (requests.exceptions.RequestException, ValueError) as e:
+            last_error = e
+            if attempt < retries - 1:
+                wait = (backoff_base ** attempt) + random.uniform(0, 0.5)
+                time.sleep(wait)
+                continue
+            break
+
+    # Re-raise so callers can surface the real error
+    raise RuntimeError(
+        f"Open-Meteo API failed for ({latitude}, {longitude}) after "
+        f"{retries} attempts: {last_error}"
+    ) from last_error
 
 
 # WMO Weather interpretation codes

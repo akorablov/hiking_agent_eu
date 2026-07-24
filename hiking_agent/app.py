@@ -565,7 +565,11 @@ def _cached_reverse_geocode(lat: float, lon: float):
 
 @st.cache_data(show_spinner=False, ttl=600)
 def _cached_weather_summary(lat: float, lon: float):
-    wd = get_weather(lat, lon)
+    # Round to ~1km precision so requests from nearby users/reloads share a
+    # cache entry instead of each busting the cache with a unique GPS float
+    # and re-hitting Open-Meteo (this is what was causing 429s).
+    lat_r, lon_r = round(lat, 2), round(lon, 2)
+    wd = get_weather(lat_r, lon_r)
     return get_todays_weather_summary(wd)
 
 
