@@ -6,24 +6,23 @@ from datetime import datetime, date
 import statistics
 
 
-def get_weather(latitude, longitude, retries=3, backoff_base=1.5):
+# Identify ourselves to Met.no as required by their terms of service:
+# https://api.met.no/doc/TermsOfService - requests without a descriptive User-Agent (app name + a way to contact you) can be blocked outright.
+# TODO: replace with your real app name / contact email or repo URL.
+METNO_USER_AGENT = "Trail Finder (https://github.com/akorablov/hiking_agent_eu)"
+
+
+def _fetch_open_meteo(latitude, longitude, retries=3, backoff_base=1.5):
     """
     Fetches hourly weather forecast data from the Open-Meteo API.
 
     Retries with exponential backoff (+ jitter) on 429 (rate limited) and 5xx responses, since Open-Meteo rate-limits by source IP and a single
     transient failure shouldn't take down the whole pipeline. If the API sends a `Retry-After` header, that's honoured instead of the computed backoff.
 
-    Args:
-        latitude (float): The latitude for the weather forecast.
-        longitude (float): The longitude for the weather forecast.
-        retries (int): Number of attempts before giving up.
-        backoff_base (float): Base seconds for exponential backoff.
-
     Returns:
-        dict: A dictionary containing the API response with weather data.
+        dict: A dictionary containing the API response with weather data, already in the "hourly" shape get_todays_weather_summary expects.
 
-    Raises:
-        RuntimeError: If the API call ultimately fails after all retries.
+    RuntimeError: If the API call ultimately fails after all retries.
     """
     url = (
         f"https://api.open-meteo.com/v1/forecast"
@@ -67,11 +66,136 @@ def get_weather(latitude, longitude, retries=3, backoff_base=1.5):
                 continue
             break
 
-    # Re-raise so callers can surface the real error
     raise RuntimeError(
         f"Open-Meteo API failed for ({latitude}, {longitude}) after "
         f"{retries} attempts: {last_error}"
     ) from last_error
+
+
+# Best-effort mapping from Met.no's symbol_code taxonomy to the WMO codes
+# used elsewhere in this file. Met.no's symbols don't line up 1:1 with WMO,
+# so this is approximate - good enough for picking a description, not for
+# anything that needs to be precise.
+_METNO_SYMBOL_TO_WMO = {
+    "clearsky": 0, "fair": 1, "partlycloudy": 2, "cloudy": 3, "fog": 45,
+    "lightrain": 61, "rain": 63, "heavyrain": 65,
+    "lightrainshowers": 80, "rainshowers": 80, "heavyrainshowers": 82,
+    "lightsleet": 71, "sleet": 73, "heavysleet": 75,
+    "lightsleetshowers": 80, "sleetshowers": 80, "heavysleetshowers": 82,
+    "lightsnow": 71, "snow": 73, "heavysnow": 75,
+    "lightsnowshowers": 85, "snowshowers": 85, "heavysnowshowers": 86,
+    "lightrainandthunder": 95, "rainandthunder": 95, "heavyrainandthunder": 96,
+    "lightsnowandthunder": 96, "snowandthunder": 96, "heavysnowandthunder": 99,
+    "lightsleetandthunder": 95, "sleetandthunder": 95, "heavysleetandthunder": 96,
+    "rainshowersandthunder": 95, "heavyrainshowersandthunder": 96,
+    "snowshowersandthunder": 96, "heavysnowshowersandthunder": 99,
+    "sleetshowersandthunder": 95, "heavysleetshowersandthunder": 96,
+}
+
+
+def _metno_symbol_to_wmo(symbol_code):
+    # symbol_code looks like "partlycloudy_day" / "clearsky_night" / "fog"
+    base = symbol_code.split("_")[0] if symbol_code else ""
+    return _METNO_SYMBOL_TO_WMO.get(base, 3)  # default to "Overcast" if unknown
+
+
+def _metno_precip_probability(amount_mm):
+    # Met.no's locationforecast doesn't expose a precipitation probability field the way Open-Meteo does, so this derives a rough stand-in from
+    # forecast precipitation amount. It's an approximation, not a true probability, good enough for a fallback summary.
+    if not amount_mm:
+        return 0
+    if amount_mm <= 0.5:
+        return 20
+    if amount_mm <= 2:
+        return 50
+    if amount_mm <= 5:
+        return 70
+    return 90
+
+
+def _fetch_metno(latitude, longitude):
+    """
+    Fetches hourly weather forecast data from Met.no (Norway's national weather service) as a fallback when Open-Meteo is unavailable. Free,
+    keyless, and throttled by User-Agent rather than shared IP, so it's unlikely to fail for the same reason at the same time as Open-Meteo.
+
+    Returns:
+        dict: Reshaped into the same {"hourly": {...}} structure Open-Meteo eturns, so get_todays_weather_summary() works unchanged.
+
+    Raises:
+        RuntimeError: If the API call fails or returns unexpected data.
+    """
+    url = (
+        "https://api.met.no/weatherapi/locationforecast/2.0/compact"
+        f"?lat={latitude}&lon={longitude}"
+    )
+    try:
+        response = requests.get(
+            url, timeout=15, headers={"User-Agent": METNO_USER_AGENT}
+        )
+        response.raise_for_status()
+        data = response.json()
+        timeseries = data["properties"]["timeseries"]
+
+        times, temps, precip_probs, codes = [], [], [], []
+        for entry in timeseries:
+            details = entry.get("data", {}).get("instant", {}).get("details", {})
+            if "air_temperature" not in details:
+                continue
+
+            # Prefer the finer-grained next_1_hours block; fall back to
+            # next_6_hours further out in the forecast where that's all
+            # Met.no provides.
+            near = entry["data"].get("next_1_hours") or entry["data"].get("next_6_hours") or {}
+            symbol = near.get("summary", {}).get("symbol_code", "")
+            precip_amount = near.get("details", {}).get("precipitation_amount", 0)
+
+            times.append(entry["time"])
+            temps.append(details["air_temperature"])
+            precip_probs.append(_metno_precip_probability(precip_amount))
+            codes.append(_metno_symbol_to_wmo(symbol))
+
+        if not times:
+            raise ValueError("Met.no response had no usable timeseries entries")
+
+        return {
+            "hourly": {
+                "time": times,
+                "temperature_2m": temps,
+                "precipitation_probability": precip_probs,
+                "weather_code": codes,
+            }
+        }
+    except (requests.exceptions.RequestException, KeyError, ValueError) as e:
+        raise RuntimeError(f"Met.no API failed for ({latitude}, {longitude}): {e}") from e
+
+
+def get_weather(latitude, longitude, retries=3, backoff_base=1.5):
+    """
+    Fetches hourly weather forecast data, preferring Open-Meteo and falling
+    back to Met.no if Open-Meteo is unavailable (e.g. rate limited).
+
+    Args:
+        latitude (float): The latitude for the weather forecast.
+        longitude (float): The longitude for the weather forecast.
+        retries (int): Number of Open-Meteo attempts before falling back.
+        backoff_base (float): Base seconds for Open-Meteo's exponential backoff.
+
+    Returns:
+        dict: A dictionary containing weather data in Open-Meteo's "hourly" shape.
+
+    Raises:
+        RuntimeError: If both Open-Meteo and the Met.no fallback fail.
+    """
+    try:
+        return _fetch_open_meteo(latitude, longitude, retries=retries, backoff_base=backoff_base)
+    except RuntimeError as primary_error:
+        try:
+            return _fetch_metno(latitude, longitude)
+        except RuntimeError as fallback_error:
+            raise RuntimeError(
+                f"Both weather sources failed for ({latitude}, {longitude}). "
+                f"Open-Meteo: {primary_error} | Met.no: {fallback_error}"
+            ) from fallback_error
 
 
 # WMO Weather interpretation codes
