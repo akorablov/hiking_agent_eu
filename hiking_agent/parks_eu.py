@@ -2,9 +2,7 @@ import requests
 import time
 import math
 
-# Overpass mirrors tried in order.
-# lz4 and z subdomains are separate load-balanced instances of overpass-api.de
-# and are often less congested than the main endpoint.
+# Overpass mirrors tried in order. lz4 and z subdomains are separate load-balanced instances of overpass-api.de and are often less congested than the main endpoint.
 OVERPASS_ENDPOINTS = [
     "https://lz4.overpass-api.de/api/interpreter",   # less loaded subdomain
     "https://z.overpass-api.de/api/interpreter",      # second subdomain
@@ -16,10 +14,6 @@ OVERPASS_ENDPOINTS = [
 
 MAX_PARKS = 6
 FALLBACK_MAX_DISTANCE_KM = 300
-
-# Global fallback - only used if ALL Overpass mirrors fail simultaneously.
-# Covers major national parks on every continent, filtered by FALLBACK_MAX_DISTANCE_KM
-# from the user's actual position, so only nearby ones are ever shown.
 FALLBACK_PARKS = [
     # Czech Republic & immediate neighbours
     {"name": "Bohemian Switzerland NP",      "lat": 50.8833, "lon": 14.2333},
@@ -175,21 +169,15 @@ def _post_overpass(query, timeout=45):
 
 def get_parks(latitude, longitude, radius_km=25):
     """
-    Fetches ALL types of green/protected areas near the user - national parks,
-    nature reserves, protected landscapes, forests, regional parks - anything
-    OSM tags as a meaningful natural area. Small and unknown local areas are
-    included intentionally.
+    Fetches ALL types of green/protected areas near the user - national parks, nature reserves, protected landscapes, forests, regional parks - anything
+    OSM tags as a meaningful natural area. Small and unknown local areas are included intentionally.
 
-    Uses a tight default radius (25 km) so results are genuinely nearby.
-    Sorted by distance; returns the MAX_PARKS closest.
+    Uses a tight default radius (25 km) so results are genuinely nearby. Sorted by distance; returns the MAX_PARKS closest.
 
-    Falls back to the Europe-wide hardcoded list (filtered by distance) only
-    if every Overpass mirror fails.
+    Falls back to the Europe-wide hardcoded list (filtered by distance) only if every Overpass mirror fails.
     """
     radius_m = radius_km * 1000
 
-    # Broad query: nodes + ways + relations, all meaningful natural/protected tags.
-    # No protect_class filter - we want small unknown local areas too.
     query = f"""
     [out:json][timeout:55];
     (

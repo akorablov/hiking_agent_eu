@@ -553,9 +553,7 @@ def is_final_answer(messages):
         return False
 
 
-# ── Individually cached, granular building blocks ──
-# Each is cached on its own inputs so a cache-miss in one (e.g. browser_lang
-# changing, which busts run_pipeline's cache) doesn't force refetching the rest.
+# Individually cached, granular building blocks. Each is cached on its own inputs so a cache-miss in one (e.g. browser_lang changing, which busts run_pipeline's cache) doesn't force refetching the rest.
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def _cached_reverse_geocode(lat: float, lon: float):
@@ -565,9 +563,7 @@ def _cached_reverse_geocode(lat: float, lon: float):
 
 @st.cache_data(show_spinner=False, ttl=600)
 def _cached_weather_summary(lat: float, lon: float):
-    # Round to ~1km precision so requests from nearby users/reloads share a
-    # cache entry instead of each busting the cache with a unique GPS float
-    # and re-hitting Open-Meteo (this is what was causing 429s).
+    # Round to ~1km precision so requests from nearby users/reloads share a cache entry instead of each busting the cache with a unique GPS float and re-hitting Open-Meteo (this is what was causing 429s).
     lat_r, lon_r = round(lat, 2), round(lon, 2)
     wd = get_weather(lat_r, lon_r)
     return get_todays_weather_summary(wd)
@@ -603,15 +599,13 @@ def _cached_trails(parks, radius_km: int = 10):
 
 
 # ── Pipeline
-# NOTE: browser_lang passed as argument - session_state not accessible
+# NOTE: browser_lang passed as argument, session_state not accessible
 # inside @st.cache_data functions
 @st.cache_data(show_spinner=False)
 def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
     out = {"recommendations": "", "message_history": []}
 
-    # 1-2-4. Reverse geocode, weather, and parks are all independent of each
-    # other (each only needs lat/lon), so run them concurrently instead of
-    # waiting on each network/lookup call in sequence.
+    # Reverse geocode, weather, and parks are all independent of each other (each only needs lat/lon), so run them concurrently instead of waiting on each network/lookup call in sequence.
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as ex:
         geo_future     = ex.submit(_cached_reverse_geocode, lat, lon)
         weather_future = ex.submit(_cached_weather_summary, lat, lon)
@@ -876,7 +870,7 @@ if st.session_state.get("done", False):
     st.markdown('<div class="chat-hint">type "remember: I prefer flat walks" to pin a preference</div>',
                 unsafe_allow_html=True)
 
-    # Chat history (skip index 0 - shown above as rec)
+    # Chat history (skip index 0, shown above as rec)
     st.markdown('<div class="chat-wrap">', unsafe_allow_html=True)
     for i, (role, text) in enumerate(st.session_state.chat):
         if i == 0: continue

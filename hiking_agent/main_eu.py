@@ -6,12 +6,11 @@ from location_eu import get_current_location
 
 MODEL = "gpt-oss:120b-cloud"
 
-# Maximum number of messages kept in the sliding context window.
-# Oldest messages (after the system prompt) are dropped when exceeded.
+# Maximum number of messages kept in the sliding context window. Oldest messages (after the system prompt) are dropped when exceeded.
 MAX_HISTORY = 20
 
 
-# ── Exceptions ────────────────────────────────────────────────────────────────
+# Exceptions
 
 class OllamaNotRunningError(RuntimeError):
     """Raised when the Ollama daemon is not reachable."""
@@ -26,7 +25,7 @@ class WeatherError(RuntimeError):
     """Raised when the weather API returns no usable data."""
 
 
-# ── Ollama pre-flight check ───────────────────────────────────────────────────
+# Ollama pre-flight check
 
 def check_ollama() -> None:
     """
@@ -62,7 +61,7 @@ def check_ollama() -> None:
         )
 
 
-# ── Memory helpers ────────────────────────────────────────────────────────────
+# Memory helpers
 
 def _trim_history(messages: list, max_messages: int = MAX_HISTORY) -> list:
     """
@@ -85,7 +84,7 @@ def _build_memory_note(memory: list[str]) -> str:
     return f"\n\nUser preferences and pinned facts to remember:\n{lines}"
 
 
-# ── LLM query ────────────────────────────────────────────────────────────────
+# LLM query
 
 def query_model(
     system_prompt: str,
@@ -148,7 +147,7 @@ def query_model(
         except Exception as e:
             last_error = e
 
-    # All retries exhausted - return a graceful fallback so the loop survives
+    # All retries exhausted, return a graceful fallback so the loop survives
     print(f"⚠  Model call failed after {retries + 1} attempts: {last_error}")
     fallback = "I'm having trouble generating a response right now. Please try again."
     messages.append({"role": "assistant", "content": fallback})
@@ -171,22 +170,22 @@ def is_final_answer(messages: list) -> bool:
         response = ollama.chat(model=MODEL, messages=reflection_messages)
         return "yes" in response["message"]["content"].strip().lower()
     except Exception:
-        return False          # fail silently - this is cosmetic, not critical
+        return False
 
 
-# ── Main pipeline ─────────────────────────────────────────────────────────────
+# Main pipeline
 
 def main():
     memory: list[str] = []
 
-    # ── Pre-flight: Ollama ────────────────────────────────────────────────────
+    # Pre-flight: Ollama
     try:
         check_ollama()
     except (OllamaNotRunningError, OllamaModelNotFoundError) as e:
         print(f"\n❌ {e}\n")
         return
 
-    # ── 1. Location ───────────────────────────────────────────────────────────
+    # 1. Location
     print("Detecting your location...")
     try:
         latitude, longitude, city, country = get_current_location()
@@ -201,7 +200,7 @@ def main():
 
     print(f"Location detected: {city}, {country} ({latitude:.4f}, {longitude:.4f})")
 
-    # ── 2. Weather ────────────────────────────────────────────────────────────
+    # 2. Weather
     print("Checking the weather near you...")
     try:
         weather_data = get_weather(latitude, longitude)
@@ -221,7 +220,7 @@ def main():
 
     print(f"Weather summary: {weather_summary}")
 
-    # ── 3. Weather gate (LLM ①) ───────────────────────────────────────────────
+    # 3. Weather gate (LLM)
     try:
         weather_decision, _ = query_model(
             system_prompt=(
@@ -241,7 +240,7 @@ def main():
         print("\nThe model determined the weather is not suitable for going outside today.")
         return
 
-    # ── 4. Discover nearby areas ──────────────────────────────────────────────
+    # 4. Discover nearby areas
     print("\nWeather looks good! Searching for green areas and walking spots near you...")
     try:
         parks = get_parks(latitude, longitude, radius_km=25)
@@ -255,14 +254,14 @@ def main():
         print("Try increasing radius_km in parks_eu.py or check your location detection.")
         return
 
-    # ── 5. Fetch trails ───────────────────────────────────────────────────────
+    # 5. Fetch trails
     try:
         trails_by_park = get_trails_for_parks(parks, radius_km=10)
     except Exception as e:
         print(f"⚠  Could not fetch trails ({e}) - continuing without trail detail.")
         trails_by_park = {p["name"]: [] for p in parks}
 
-    # ── 6. Build prompt ───────────────────────────────────────────────────────
+    # 6. Build prompt
     prompt_data = ""
     for park in parks:
         trails = trails_by_park.get(park["name"], [])
@@ -282,17 +281,28 @@ def main():
         else:
             prompt_data += "  - No marked trails found, but the area is walkable.\n"
 
-    # ── 7. Recommendations (LLM ②) ────────────────────────────────────────────
+    # 7. Recommendations (LLM)
     try:
         recommendations, message_history = query_model(
             system_prompt=(
-                f"You are a friendly local guide for {city}, {country}. "
-                "The user wants to go for a walk or hike close to home today - nothing too far. "
-                "From the list of nearby green areas and trails below, recommend the top 2-3 options. "
-                "Favour the closest ones unless a slightly further option is clearly better. "
-                "For each pick give a short, practical reason: what kind of walk it is, "
-                "how long it takes, what makes it worth visiting. "
-                "If distance to the area is known, mention it."
+                f"You are an expert local hiking and walking guide for {city}, {country}. "
+                "Your task is to recommend the best nearby outdoor walks for a person who wants to leave home today without travelling far. "
+                "Select the top 2-3 recommendations from the provided list of green areas and trails. "
+                "Rank options using these priorities:"
+                "1. Proximity and ease of reaching the place from the user's location. "
+                "2. Quality of the walking experience (nature, scenery, peacefulness, variety). "
+                "3. Suitability for a spontaneous walk today (easy access, no special preparation needed). "
+                "4. Diversity between recommendations (avoid suggesting very similar places). "
+                "Prefer closer locations, but choose a slightly farther option if it offers a clearly better experience. "
+                "For each recommendation provide:"
+                "- Name of the place. "
+                "- Approximate distance if available. "
+                "- Recommended walking duration. "
+                "- Type of walk (forest path, park walk, river trail, viewpoint, etc.). "
+                "- Why it is worth visiting. "
+                "Keep recommendations practical and specific. "
+                "Do not invent facts. If information is missing, say that it is unknown. "
+                "Return the answer in a clear bullet-point format."
             ),
             user_prompt=f"Here are the walkable green areas near {city}:\n{prompt_data}",
             memory=memory,
@@ -304,7 +314,7 @@ def main():
     print("\n--- Walking & Hiking Recommendations ---")
     print(recommendations)
 
-    # ── 8. Follow-up Q&A loop ─────────────────────────────────────────────────
+    # 8. Follow-up Q&A loop
     print("\nTip: type  remember: <fact>  to pin something for the rest of the session.")
     print("     type  memory            to see what's pinned.")
     print("     type  exit              to quit.\n")

@@ -72,10 +72,6 @@ def _fetch_open_meteo(latitude, longitude, retries=3, backoff_base=1.5):
     ) from last_error
 
 
-# Best-effort mapping from Met.no's symbol_code taxonomy to the WMO codes
-# used elsewhere in this file. Met.no's symbols don't line up 1:1 with WMO,
-# so this is approximate - good enough for picking a description, not for
-# anything that needs to be precise.
 _METNO_SYMBOL_TO_WMO = {
     "clearsky": 0, "fair": 1, "partlycloudy": 2, "cloudy": 3, "fog": 45,
     "lightrain": 61, "rain": 63, "heavyrain": 65,
@@ -100,8 +96,7 @@ def _metno_symbol_to_wmo(symbol_code):
 
 
 def _metno_precip_probability(amount_mm):
-    # Met.no's locationforecast doesn't expose a precipitation probability field the way Open-Meteo does, so this derives a rough stand-in from
-    # forecast precipitation amount. It's an approximation, not a true probability, good enough for a fallback summary.
+    # Met.no's locationforecast doesn't expose a precipitation probability field the way Open-Meteo does, so this derives a rough stand-in from forecast precipitation amount. It's an approximation, not a true probability, good enough for a fallback summary.
     if not amount_mm:
         return 0
     if amount_mm <= 0.5:
@@ -142,9 +137,7 @@ def _fetch_metno(latitude, longitude):
             if "air_temperature" not in details:
                 continue
 
-            # Prefer the finer-grained next_1_hours block; fall back to
-            # next_6_hours further out in the forecast where that's all
-            # Met.no provides.
+            # Prefer the finer-grained next_1_hours block; fall back to next_6_hours further out in the forecast where that's all Met.no provides.
             near = entry["data"].get("next_1_hours") or entry["data"].get("next_6_hours") or {}
             symbol = near.get("summary", {}).get("symbol_code", "")
             precip_amount = near.get("details", {}).get("precipitation_amount", 0)
