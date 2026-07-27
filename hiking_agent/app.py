@@ -50,7 +50,7 @@ html, body, .stApp {
 .block-container { padding: 0 !important; max-width: 680px !important; margin: 0 auto; }
 section[data-testid="stSidebar"] { display: none; }
 
-/* ── NAV ── */
+/* ~ NAV ~ */
 .nav {
   display: flex;
   align-items: center;
@@ -71,7 +71,7 @@ section[data-testid="stSidebar"] { display: none; }
   letter-spacing: 1px;
 }
 
-/* ── HERO ── */
+/* ~ HERO ~ */
 .hero { padding: 0 0 72px; }
 
 .hero-label {
@@ -116,7 +116,7 @@ section[data-testid="stSidebar"] { display: none; }
   margin-bottom: 25px;
 }
 
-/* ── MAIN CTA BUTTON ── */
+/* ~ MAIN CTA BUTTON ~ */
 .stButton {
   display: flex !important;
   justify-content: center !important;
@@ -154,7 +154,7 @@ section[data-testid="stSidebar"] { display: none; }
   transform: translateY(-1px) !important;
 }
 
-/* ── STEPS ROW ── */
+/* ~ STEPS ROW ~ */
 .steps {
   display: flex;
   justify-content: space-between;
@@ -180,14 +180,14 @@ section[data-testid="stSidebar"] { display: none; }
   line-height: 1.5;
 }
 
-/* ── DIVIDER ── */
+/* ~ DIVIDER ~ */
 .divider {
   height: 1px;
   background: var(--border);
   margin: 40px 0;
 }
 
-/* ── STATUS BAR ── */
+/* ~ STATUS BAR ~ */
 .status-bar {
   display: flex;
   justify-content: space-between;
@@ -233,7 +233,7 @@ section[data-testid="stSidebar"] { display: none; }
   vertical-align: middle;
 }
 
-/* ── SECTION LABEL ── */
+/* ~ SECTION LABEL ~ */
 .sec-label {
   font-family: 'DM Mono', monospace;
   font-size: 10px;
@@ -243,7 +243,7 @@ section[data-testid="stSidebar"] { display: none; }
   margin-bottom: 16px;
 }
 
-/* ── PARK LIST ── */
+/* ~ PARK LIST ~ */
 .park-list { margin-bottom: 48px; }
 .park-row {
   display: flex;
@@ -304,7 +304,7 @@ section[data-testid="stSidebar"] { display: none; }
   margin-left: 16px;
 }
 
-/* ── RECOMMENDATION ── */
+/* ~ RECOMMENDATION ~ */
 .rec-block {
   background: linear-gradient(135deg, rgba(74,222,128,0.08) 0%, rgba(74,222,128,0.02) 100%);
   border: 1px solid rgba(150,255,180,0.15);
@@ -323,7 +323,7 @@ section[data-testid="stSidebar"] { display: none; }
   font-weight: 500;
 }
 
-/* ── CHAT ── */
+/* ~ CHAT ~ */
 .chat-wrap { margin-bottom: 0; }
 .chat-msg-user {
   text-align: right;
@@ -364,7 +364,7 @@ section[data-testid="stSidebar"] { display: none; }
   letter-spacing: 0.5px;
 }
 
-/* ── MEMORY PILLS ── */
+/* ~ MEMORY PILLS ~ */
 .memory-wrap { margin: 12px 0 24px; display: flex; flex-wrap: wrap; gap: 6px; }
 .mem-pill {
   font-family: 'DM Mono', monospace;
@@ -379,7 +379,7 @@ section[data-testid="stSidebar"] { display: none; }
   letter-spacing: 0.3px;
 }
 
-/* ── CHAT HINT ── */
+/* ~ CHAT HINT ~ */
 .chat-hint {
   font-family: 'DM Mono', monospace;
   font-size: 10px;
@@ -388,7 +388,7 @@ section[data-testid="stSidebar"] { display: none; }
   margin-bottom: 12px;
 }
 
-/* ── STREAMLIT CHAT INPUT ── */
+/* ~ STREAMLIT CHAT INPUT ~ */
 .stChatInput textarea {
   background: linear-gradient(135deg, rgba(74,222,128,0.06) 0%, rgba(74,222,128,0.01) 100%) !important;
   border: 1px solid rgba(150,255,180,0.15) !important;
@@ -408,7 +408,7 @@ section[data-testid="stSidebar"] { display: none; }
   color: #0a0a0a !important;
 }
 
-/* ── MAP BUTTON ── */
+/* ~ MAP BUTTON ~ */
 .map-btn {
   display: inline-flex;
   align-items: center;
@@ -447,7 +447,7 @@ section[data-testid="stSidebar"] { display: none; }
 }
 .map-btn:visited { color: rgba(200,255,215,0.95) !important; }
 
-/* ── RESET LINK ── */
+/* ~ RESET LINK ~ */
 .reset-wrap {
   padding: 32px 0 64px;
   text-align: center;
@@ -465,10 +465,10 @@ section[data-testid="stSidebar"] { display: none; }
   color: var(--text) !important;
 }
 
-/* ── SPINNER ── */
+/* ~ SPINNER ~ */
 .stSpinner > div { color: var(--green) !important; }
 
-/* ── BAD WEATHER ── */
+/* ~ BAD WEATHER ~ */
 .weather-bad {
   padding: 32px 28px;
   background: var(--surface);
@@ -493,7 +493,7 @@ section[data-testid="stSidebar"] { display: none; }
 """, unsafe_allow_html=True)
 
 
-# ── Groq 
+#  Groq 
 @st.cache_resource
 def get_groq_client():
     key = os.environ.get("GROQ_API_KEY", "")
@@ -503,7 +503,7 @@ def get_groq_client():
     return Groq(api_key=key)
 
 
-# ── Memory 
+#  Memory 
 def _trim_history(messages, n=MAX_HISTORY):
     sys  = [m for m in messages if m["role"] == "system"]
     chat = [m for m in messages if m["role"] != "system"]
@@ -514,7 +514,7 @@ def _memory_note(memory):
     return "\n\nUser preferences:\n" + "\n".join(f"- {m}" for m in memory)
 
 
-# ── LLM ─
+#  LLM 
 def query_model(system_prompt, user_prompt, messages=None, memory=None, retries=2):
     client = get_groq_client()
     if messages is None: messages = []
@@ -598,7 +598,7 @@ def _cached_trails(parks, radius_km: int = 10):
     return get_trails_for_parks(parks, radius_km=radius_km)
 
 
-# ── Pipeline
+#  Pipeline
 # NOTE: browser_lang passed as argument, session_state not accessible
 # inside @st.cache_data functions
 @st.cache_data(show_spinner=False)
@@ -697,7 +697,6 @@ for k, v in [("done", False), ("history", []), ("memory", []),
 
 
 # LAYOUT WRAPPER
-
 st.markdown('<div style="padding: 0 24px;">', unsafe_allow_html=True)
 
 # Nav
@@ -803,7 +802,7 @@ if st.session_state.get("done", False):
             st.rerun()
         st.stop()
 
-    # ── Status bar
+    #  Status bar
     st.markdown(f"""
     <div class="status-bar">
       <div class="stat">
@@ -821,7 +820,7 @@ if st.session_state.get("done", False):
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Park list
+    #  Park list
     parks  = r.get("parks", [])
     trails = r.get("trails", {})
 
@@ -830,7 +829,7 @@ if st.session_state.get("done", False):
         t_count = len(trails.get(p["name"], []))
         t_str   = f"{t_count} trail{'s' if t_count!=1 else ''}" if t_count else "walkable"
         lat_p, lon_p = p.get("lat", 0), p.get("lon", 0)
-        # Universal map link - opens Google Maps on Android/desktop, Apple Maps on iOS
+        # Universal map link opens Google Maps on Android/desktop, Apple Maps on iOS
         gmaps_url = f"https://www.google.com/maps/dir/?api=1&destination={lat_p},{lon_p}&travelmode=walking"
         rows += f"""
         <div class="park-row">
@@ -852,13 +851,13 @@ if st.session_state.get("done", False):
     <div class="park-list">{rows}</div>
     """, unsafe_allow_html=True)
 
-    # ── Recommendation
+    #  Recommendation
     st.markdown(f"""
     <div class="sec-label">Today's recommendation</div>
     <div class="rec-block">{r['recommendations'].replace(chr(10), '<br>')}</div>
     """, unsafe_allow_html=True)
 
-    # ── Chat
+    #  Chat
     st.markdown('<div class="sec-label">Ask a follow-up</div>', unsafe_allow_html=True)
 
     if st.session_state.memory:

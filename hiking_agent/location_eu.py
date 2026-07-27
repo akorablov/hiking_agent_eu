@@ -25,7 +25,7 @@ _HEADERS = {
     "Accept": "application/json",
 }
 
-# (connect_timeout, read_timeout) - fails fast on a dead/blocked host instead of waiting a long read timeout.
+# (connect_timeout, read_timeout), fails fast on a dead/blocked host instead of waiting a long read timeout.
 _TIMEOUT = (3, 5)
 
 # Reused across calls for connection pooling / keep-alive.
