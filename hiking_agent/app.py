@@ -9,7 +9,7 @@ from location_eu import get_current_location
 from weather import get_weather, get_todays_weather_summary
 from parks_eu import get_parks, get_trails_for_parks
 
-MODEL       = "llama-3.3-70b-versatile"
+MODEL       = "openai/gpt-oss-120b"
 MAX_HISTORY = 20
 
 st.set_page_config(
@@ -538,7 +538,7 @@ def query_model(system_prompt, user_prompt, messages=None, memory=None, retries=
         except Exception as e:
             last_err = e
             if attempt < retries: time.sleep(1.5 * (attempt + 1))
-    fallback = "Having trouble responding right now - please try again."
+    fallback = "Having trouble responding right now. Please try again!"
     messages.append({"role": "assistant", "content": fallback})
     return fallback, messages
 
@@ -553,7 +553,8 @@ def is_final_answer(messages):
         return False
 
 
-# Individually cached, granular building blocks. Each is cached on its own inputs so a cache-miss in one (e.g. browser_lang changing, which busts run_pipeline's cache) doesn't force refetching the rest.
+# Individually cached, granular building blocks. Each is cached on its own inputs so a cache-miss in one 
+# (e.g. browser_lang changing, which busts run_pipeline's cache) doesn't force refetching the rest.
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def _cached_reverse_geocode(lat: float, lon: float):
@@ -563,7 +564,8 @@ def _cached_reverse_geocode(lat: float, lon: float):
 
 @st.cache_data(show_spinner=False, ttl=600)
 def _cached_weather_summary(lat: float, lon: float):
-    # Round to ~1km precision so requests from nearby users/reloads share a cache entry instead of each busting the cache with a unique GPS float and re-hitting Open-Meteo (this is what was causing 429s).
+    # Round to ~1km precision so requests from nearby users/reloads share a cache entry
+    # instead of each busting the cache with a unique GPS float and re-hitting Open-Meteo (this is what was causing 429s).
     lat_r, lon_r = round(lat, 2), round(lon, 2)
     wd = get_weather(lat_r, lon_r)
     return get_todays_weather_summary(wd)
@@ -764,7 +766,7 @@ if not st.session_state.done:
             if "error" in result:
                 st.error(result.get("error", "Something went wrong."))
             elif not result.get("recommendations"):
-                st.warning("Could not generate recommendations - please try again.")
+                st.warning("Could not generate recommendations. Please try again!")
                 for k in ["done","history","memory","chat","result","get_location","pipeline_running"]:
                     st.session_state.pop(k, None)
                 run_pipeline.clear()
@@ -780,12 +782,12 @@ if not st.session_state.done:
 
 
 
-# RESULTS
+# Results
 if st.session_state.get("done", False):
     r = st.session_state.result
 
     if not r or "error" in r:
-        st.error(r.get("error", "Something went wrong - please try again.") if r else "No result.")
+        st.error(r.get("error", "Something went wrong. Please try again!") if r else "No result.")
         if st.button("Try again", key="retry_error"):
             for k in ["done","history","memory","chat","result","get_location"]:
                 st.session_state.pop(k, None)
@@ -794,7 +796,7 @@ if st.session_state.get("done", False):
         st.stop()
 
     if not r.get("recommendations"):
-        st.warning("Could not generate recommendations - please try again.")
+        st.warning("Could not generate recommendations. Please try again!")
         if st.button("Try again", key="retry_norec"):
             for k in ["done","history","memory","chat","result","get_location"]:
                 st.session_state.pop(k, None)
