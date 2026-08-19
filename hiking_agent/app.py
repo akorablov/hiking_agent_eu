@@ -706,7 +706,7 @@ st.markdown('<div style="padding: 0 24px;">', unsafe_allow_html=True)
 # Nav
 st.markdown("""
 <div class="nav">
-  <div class="nav-logo">Trail finder</div>
+  <div class="nav-logo">TrailFinder</div>
   <div class="nav-links">Free | Open Source | Worldwide</div>
 </div>
 """, unsafe_allow_html=True)
@@ -761,7 +761,7 @@ if not st.session_state.done:
             lat = loc["coords"]["latitude"]
             lon = loc["coords"]["longitude"]
             browser_lang = st.session_state.get("browser_lang", "en")
-            with st.spinner("Checking weather · Finding nearby walks…"):
+            with st.spinner("Checking weather. Finding nearby walks…"):
                 result = run_pipeline(lat, lon, browser_lang)
             st.session_state["pipeline_running"] = False
             st.session_state.result = result
