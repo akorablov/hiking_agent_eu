@@ -21,7 +21,7 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap');
 
 :root {
@@ -59,7 +59,7 @@ section[data-testid="stSidebar"] { display: none; }
   margin-bottom: 80px;
 }
 .nav-logo {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Manrope', sans-serif;
   font-size: 13px;
   color: var(--mint-text);
   letter-spacing: 0.5px;
@@ -75,7 +75,7 @@ section[data-testid="stSidebar"] { display: none; }
 .hero { padding: 0 0 72px; }
 
 .hero-label {
-  font-family: 'DM Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -94,7 +94,7 @@ section[data-testid="stSidebar"] { display: none; }
 }
 
 .hero-h1 {
-  font-family: 'Satoshi', 'Roboto', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 42px;
   font-weight: 300;
   line-height: 1.1;
@@ -108,6 +108,7 @@ section[data-testid="stSidebar"] { display: none; }
 }
 
 .hero-desc {
+  font-family: 'Manrope', sans-serif;
   font-size: 16px;
   font-weight: 300;
   line-height: 1.7;
@@ -127,7 +128,7 @@ section[data-testid="stSidebar"] { display: none; }
   color: rgba(200,255,215,0.95) !important;
   border: 1px solid rgba(150,255,180,0.3) !important;
   border-radius: 999px !important;
-  font-family: 'Roboto', sans-serif !important;
+  font-family: 'Manrope', sans-serif !important;
   font-size: 15px !important;
   font-weight: 500 !important;
   letter-spacing: 0.2px !important;
@@ -168,7 +169,7 @@ section[data-testid="stSidebar"] { display: none; }
   padding: 0 4px;
 }
 .step-num {
-  font-family: 'DM Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   color: var(--mint-text);
   margin-bottom: 8px;
@@ -607,7 +608,8 @@ def _cached_trails(parks, radius_km: int = 10):
 def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
     out = {"recommendations": "", "message_history": []}
 
-    # Reverse geocode, weather, and parks are all independent of each other (each only needs lat/lon), so run them concurrently instead of waiting on each network/lookup call in sequence.
+    # Reverse geocode, weather and parks are all independent of each other (each only needs lat/lon),
+    # so run them concurrently instead of waiting on each network/lookup call in sequence.
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as ex:
         geo_future     = ex.submit(_cached_reverse_geocode, lat, lon)
         weather_future = ex.submit(_cached_weather_summary, lat, lon)
@@ -675,7 +677,7 @@ def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
                 "Favour the closest. For each: what kind of walk, how long, why it's good. "
                 f"IMPORTANT: Respond in the language with BCP-47 code '{browser_lang}'. "
                 "If unsure of the language, respond in English. "
-                "Be warm, specific, and concise."
+                "Be warm, specific and concise."
             ),
             user_prompt=f"Green areas near {city}:\n{prompt_data}",
         )
