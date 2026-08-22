@@ -143,6 +143,7 @@ section[data-testid="stSidebar"] { display: none; }
   transition: all 0.25s ease !important;
   cursor: pointer !important;
   width: auto !important;
+  white-space: nowrap !important;
 }
 .stButton > button:hover {
   background: linear-gradient(135deg, rgba(74,222,128,0.3) 0%, rgba(74,222,128,0.1) 100%) !important;
@@ -726,7 +727,7 @@ if not st.session_state.done:
 
     col_a, col_b, col_c = st.columns([1, 1, 1])
     with col_b:
-        go = st.button("Find walks near me", use_container_width=True)
+        go = st.button("Find walks near me", use_container_width=False)
 
     st.markdown("""
     <div class="steps">
@@ -913,7 +914,7 @@ if st.session_state.get("done", False):
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
-        if st.button("Search again", use_container_width=True):
+        if st.button("Search again", use_container_width=False):
             for k in ["done","history","memory","chat","result","get_location"]:
                 st.session_state.pop(k, None)
             run_pipeline.clear()
