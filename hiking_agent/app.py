@@ -47,7 +47,7 @@ html, body, .stApp {
 }
 
 #MainMenu, footer, header { visibility: hidden; }
-.block-container { padding: 0 !important; max-width: 680px !important; margin: 0 auto; }
+.block-container { padding: 0 24px !important; max-width: 680px !important; margin: 0 auto; }
 section[data-testid="stSidebar"] { display: none; }
 
 /* ~ NAV ~ */
@@ -494,7 +494,7 @@ section[data-testid="stSidebar"] { display: none; }
 """, unsafe_allow_html=True)
 
 
-#  Groq 
+#Groq 
 @st.cache_resource
 def get_groq_client():
     key = os.environ.get("GROQ_API_KEY", "")
@@ -504,7 +504,7 @@ def get_groq_client():
     return Groq(api_key=key)
 
 
-#  Memory 
+#Memory 
 def _trim_history(messages, n=MAX_HISTORY):
     sys  = [m for m in messages if m["role"] == "system"]
     chat = [m for m in messages if m["role"] != "system"]
@@ -515,7 +515,7 @@ def _memory_note(memory):
     return "\n\nUser preferences:\n" + "\n".join(f"- {m}" for m in memory)
 
 
-#  LLM 
+# LLM 
 def query_model(system_prompt, user_prompt, messages=None, memory=None, retries=2):
     client = get_groq_client()
     if messages is None: messages = []
@@ -669,14 +669,17 @@ def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
         weather_summary = out.get("weather_summary", "")
         recs, history = query_model(
             system_prompt=(
-                f"You are a friendly local guide for {city}, {country}. "
+                f"You are an expert local hiking and walking guide for {city}, {country}. "
                 f"It is currently {time_of_day}. "
                 f"Today's weather: {weather_summary} "
-                "Never discourage a walk - some people love walking in any weather. "
+                "Your task is to recommend the best nearby outdoor walks for a person who wants to leave home today without travelling far. "
+                "Never discourage a walk, some people love walking in any weather. "
                 "Recommend the 2-3 best nearby walks from the list. "
                 "Favour the closest. For each: what kind of walk, how long, why it's good. "
                 f"IMPORTANT: Respond in the language with BCP-47 code '{browser_lang}'. "
                 "If unsure of the language, respond in English. "
+                "Keep recommendations practical and specific. "
+                "Do not invent facts. If information is missing, say that it is unknown. "
                 "Be warm, specific and concise."
             ),
             user_prompt=f"Green areas near {city}:\n{prompt_data}",
@@ -690,7 +693,7 @@ def run_pipeline(lat: float, lon: float, browser_lang: str = "en"):
 
 
 
-# SESSION STATE
+# Session state
 
 for k, v in [("done", False), ("history", []), ("memory", []),
              ("chat", []), ("result", None), ("get_location", False),
@@ -699,9 +702,6 @@ for k, v in [("done", False), ("history", []), ("memory", []),
         st.session_state[k] = v
 
 
-
-# LAYOUT WRAPPER
-st.markdown('<div style="padding: 0 24px;">', unsafe_allow_html=True)
 
 # Nav
 st.markdown("""
@@ -918,5 +918,3 @@ if st.session_state.get("done", False):
                 st.session_state.pop(k, None)
             run_pipeline.clear()
             st.rerun()
-
-st.markdown('</div>', unsafe_allow_html=True)
